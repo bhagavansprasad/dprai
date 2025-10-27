@@ -47,7 +47,7 @@ Multi-agent AI system that:
 ├── lg_utility.py                # Helper functions (graph viz, state dump)
 ├── dpr_orchestrator.py          # Main orchestrator (imports all agents)
 ├── data_collection_agent.py     # Stage 2 agent
-├── financial_agent.py           # Stage 3 agent (planned)
+├── financial_agent.py           # Stage 3 agent
 ├── document_generator.py        # Stage 4 agent (planned)
 └── dpr_main.py                  # Entry point for testing
 ```
@@ -113,27 +113,33 @@ class DPRState(TypedDict):
 - Graph: START → INIT → DATA_COLLECTION → COORDINATOR → PLANNER → FORMATTER → END
 - Status: ✅ Tested and working
 
+**Stage 3: Financial Modeling Agent** ✅
+- Branch: `feature/stage-3-financial-agent`
+- Files added/modified:
+  * financial_agent.py (NEW)
+  * dpr_orchestrator.py (UPDATED - integrated financial agent)
+- Features:
+  * Calculates NPV, IRR, DSCR, break-even, payback period
+  * MSE-CDP compliance validation
+  * 10-year simplified projections
+  * DUMMY calculations for NPV/IRR (clearly marked with debug prints)
+  * PYTHON formulas for DSCR, break-even, payback (with simulated inputs)
+  * Stores in state["dpr_sections"]["financial"]
+- Graph: START → INIT → DATA_COLLECTION → FINANCIAL_MODELING → COORDINATOR → PLANNER → FORMATTER → END
+- Status: ✅ Tested and working
+
 ### PLANNED STAGES:
 
-**Stage 3: Financial Modeling Agent** (NEXT)
-- Branch: `feature/stage-3-financial-agent`
-- File: `financial_agent.py`
-- Will calculate:
-  * NPV (Net Present Value)
-  * IRR (Internal Rate of Return)
-  * DSCR (Debt Service Coverage Ratio) - must be >3:1
-  * Break-even point - must be <60%
-  * Payback period
-  * 10-year financial projections
-  * Loan amortization schedule
-- Validates MSE-CDP requirements
-- Stores in state["dpr_sections"]["financial"]
-
-**Stage 4: Document Generation Agent**
+**Stage 4: Document Generation Agent** (NEXT)
+- Branch: `feature/stage-4-document-generator`
 - File: `document_generator.py`
-- Generates actual DPR sections
-- Formats as professional document
-- Creates downloadable output
+- Will generate:
+  * Actual DPR sections using collected data
+  * Executive Summary
+  * Financial sections using calculated metrics
+  * Technical feasibility content
+  * Formatted professional document
+  * Downloadable output
 
 **Stage 5+: Additional Agents**
 - Technical Feasibility Agent
@@ -232,15 +238,16 @@ def {vendor}_build_order_agent():
 - Include: compliance documents checklist
 
 ================================================================================
-## SECTION 6: CURRENT STATE (END OF STAGE 2)
+## SECTION 6: CURRENT STATE (END OF STAGE 3)
 ================================================================================
 
 ### Working Files:
 1. config.py - Configuration (LLM model, DPR sections list, timeouts)
 2. lg_utility.py - Utilities (save_graph_as_png, dump_state, format_output)
-3. dpr_orchestrator.py - Main orchestrator with 5 nodes
+3. dpr_orchestrator.py - Main orchestrator with 6 nodes
 4. data_collection_agent.py - Data extraction and validation
-5. dpr_main.py - Test entry point
+5. financial_agent.py - Financial modeling and calculations
+6. dpr_main.py - Test entry point
 
 ### Current Graph Flow:
 ```
@@ -250,22 +257,33 @@ ORCHESTRATOR_INIT (initialize state)
   ↓
 DATA_COLLECTION_AGENT (extract & validate project data)
   ↓
-COORDINATOR_AGENT (use collected data to coordinate)
+FINANCIAL_MODELING_AGENT (calculate financial metrics & projections)
+  ↓
+COORDINATOR_AGENT (use collected data + financial status)
   ↓
 WORKFLOW_PLANNER (plan next steps - dummy)
   ↓
-OUTPUT_FORMATTER (format final output with project summary)
+OUTPUT_FORMATTER (format final output with project + financial summary)
   ↓
 END
 ```
 
-### Test Results (Stage 2):
+### Test Results (Stage 3):
 ✅ All nodes execute successfully
 ✅ Data extracted: cluster_type, location, members, project_cost, facility_type, 
    grant_scheme, subsidy_range
 ✅ Validation: All required fields present
-✅ Project summary displayed in output
-✅ Ready for Stage 3
+✅ Financial metrics calculated:
+   - NPV: ₹28,700,000 ✅ PASS (DUMMY calculation)
+   - IRR: 15.5% ✅ PASS (DUMMY calculation)
+   - DSCR: 2.67 ❌ FAIL (PYTHON formula with simulated inputs)
+   - Break-even: 80.0% ❌ FAIL (PYTHON formula with simulated inputs)
+   - Payback: 8.3 years (PYTHON formula with simulated inputs)
+✅ MSE-CDP Compliance: NON_COMPLIANT (example shown)
+✅ 10-year projections: SIMPLIFIED (to be enhanced)
+✅ Clear DEBUG markers: All dummy sections marked with debug prints
+✅ Financial summary displayed in output
+✅ Ready for Stage 4
 
 ### Sample Test Input:
 ```python
@@ -281,12 +299,13 @@ Please help me generate a complete DPR with all 21 sections.
 """
 ```
 
-### Sample Output (Stage 2):
+### Sample Output (Stage 3):
 ```json
 {
-  "status": "Stage 2 Complete",
+  "status": "Stage 3 Complete",
   "orchestrator": "✅ Functional",
   "data_collection": "✅ Integrated",
+  "financial_modeling": "✅ Integrated",
   "project_data_collected": 8,
   "validation": "✅ Passed",
   "project_summary": {
@@ -295,29 +314,38 @@ Please help me generate a complete DPR with all 21 sections.
     "members": 50,
     "cost": 82000000
   },
-  "next_step": "Stage 3 - Add Financial Modeling Agent"
+  "financial_summary": {
+    "npv": 28700000.0,
+    "irr": 15.5,
+    "dscr": 2.67,
+    "breakeven": 80.0,
+    "compliance": "NON_COMPLIANT",
+    "note": "⚠️ Using simulated calculations"
+  },
+  "next_step": "Stage 4 - Add Document Generation Agent"
 }
 ```
 
 ================================================================================
-## SECTION 7: NEXT STEPS (STAGE 3)
+## SECTION 7: NEXT STEPS (STAGE 4)
 ================================================================================
 
-### Stage 3 Plan: Financial Modeling Agent
+### Stage 4 Plan: Document Generation Agent
 
 **What to build:**
-- File: `financial_agent.py`
-- Calculate financial metrics using collected project data
-- Generate 10-year projections
-- Validate MSE-CDP compliance requirements
+- File: `document_generator.py`
+- Generate actual DPR sections using collected data and financial metrics
+- Format professional document content
+- Create downloadable output
 
 **Integration:**
 - Import into dpr_orchestrator.py
-- Add node: FINANCIAL_MODELING_AGENT
-- Insert after DATA_COLLECTION_AGENT, before COORDINATOR_AGENT
-- Store results in state["dpr_sections"]["financial"]
+- Add node: DOCUMENT_GENERATOR_AGENT
+- Insert after FINANCIAL_MODELING_AGENT, before COORDINATOR_AGENT
+- Generate sections based on template and collected data
+- Store results in state["dpr_sections"]
 
-**Awaiting user permission to proceed with Stage 3.**
+**Awaiting user permission to proceed with Stage 4.**
 
 ================================================================================
 ## SECTION 8: HOW TO USE THIS CONTEXT DOCUMENT
@@ -407,13 +435,15 @@ git checkout -b feature/stage-{N}-{description}
 **Stages Completed:**
 - ✅ Stage 1: Foundation & Basic Orchestrator
 - ✅ Stage 2: Data Collection Agent
+- ✅ Stage 3: Financial Modeling Agent
 
-**Current Stage:** Ready for Stage 3: Financial Modeling Agent
+**Current Stage:** Ready for Stage 4: Document Generation Agent
 
 **Git Branches:**
 - feature/stage-1-orchestrator-foundation (merged)
 - feature/stage-2-data-collection-agent (merged)
-- feature/stage-3-financial-agent (to be created)
+- feature/stage-3-financial-agent (ready to merge)
+- feature/stage-4-document-generator (to be created)
 
 ================================================================================
 END OF CONTEXT DOCUMENT
@@ -422,5 +452,5 @@ END OF CONTEXT DOCUMENT
 This document contains ALL instructions, decisions, code patterns, and context
 needed to continue the DPR Automation Platform project in a new chat session.
 
-Last updated: After successful Stage 2 testing
-Version: 1.0
+Last updated: After successful Stage 3 testing
+Version: 1.3

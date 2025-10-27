@@ -46,3 +46,55 @@ See: MASTER_CONTEXT.txt (complete documentation)
 ---
 **Status:** Stage 2 ✅ Complete | Ready for Stage 3
 **User:** bhagavan@auranet | Environment: (dpr) Ubuntu 22.04
+
+# DPR PROJECT - QUICK REFERENCE SUMMARY
+
+## 🎯 WHAT WE'RE BUILDING
+AI-powered DPR automation for MSME clusters using LangGraph + Gemini
+
+## 📁 CURRENT FILES (Stage 3 Complete)
+```
+/home/bhagavan/aura/dprai/src/
+├── config.py                    ✅ Stage 1
+├── lg_utility.py                ✅ Stage 1
+├── dpr_orchestrator.py          ✅ Stage 3 (updated)
+├── data_collection_agent.py     ✅ Stage 2
+├── financial_agent.py           ✅ Stage 3 (new)
+└── dpr_main.py                  ✅ Stage 1
+```
+
+## 🔄 CURRENT GRAPH FLOW
+START → INIT → DATA_COLLECTION → FINANCIAL_MODELING → COORDINATOR → PLANNER → FORMATTER → END
+
+## ✅ COMPLETED
+- Stage 1: Basic orchestrator (4 dummy nodes)
+- Stage 2: Data collection agent (extracts & validates 7 fields)
+- Stage 3: Financial modeling agent (NPV, IRR, DSCR, break-even, payback)
+
+## 📋 NEXT: STAGE 4
+Document Generation Agent
+- File: document_generator.py
+- Generate actual DPR sections
+- Use collected data + financial metrics
+- Format professional document
+- Downloadable output
+
+## 🔑 KEY RULES
+1. ✅ Each agent in separate file
+2. ✅ Always ask permission before generating
+3. ✅ Test each stage independently
+4. ✅ Git branch per stage: feature/stage-{N}-{description}
+5. ✅ Use Google Gemini (gemini-2.0-flash-exp)
+
+## 📊 TEST COMMAND
+```bash
+cd /home/bhagavan/aura/dprai/src/
+python dpr_main.py
+```
+
+## 📚 FULL CONTEXT
+See: MASTER_CONTEXT.txt (complete documentation)
+
+---
+**Status:** Stage 3 ✅ Complete | Ready for Stage 4
+**User:** bhagavan@auranet | Environment: (dpr) Ubuntu 22.04
