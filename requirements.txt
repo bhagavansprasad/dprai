@@ -1,0 +1,5 @@
+langchain-core
+termcolor
+langchain_google_vertexai
+langgraph
+pyppeteer
