@@ -1,0 +1,426 @@
+# DPR AUTOMATION PLATFORM - MASTER CONTEXT DOCUMENT
+# Use this to restore full context in a new chat window
+
+================================================================================
+## SECTION 1: PROJECT OVERVIEW
+================================================================================
+
+**Project Name:** AI-Powered DPR Automation Platform for MSMEs
+
+**Goal:** Build a LangGraph-based multi-agent system to automate generation of 
+MSE-CDP compliant Detailed Project Reports (DPRs) for MSME clusters in India.
+
+**Problem Statement:**
+- India's 6.3 crore MSMEs face 86% credit exclusion
+- DPR preparation takes 6-9 months and costs ₹1-6 lakhs
+- 60-70% rejection rate due to incomplete/non-compliant documentation
+- Requires 21 mandatory sections covering legal, technical, financial, market, compliance
+
+**Solution:**
+Multi-agent AI system that:
+- Reduces DPR time from 6 months to 2-3 days (90% reduction)
+- Reduces cost from ₹2 lakhs to ₹10,000 (95% reduction)
+- Increases approval rate from 30% to 75%+
+- Uses LangGraph + Google Gemini AI + domain knowledge
+
+**Technology Stack:**
+- LangGraph (multi-agent orchestration)
+- Google Gemini (ChatVertexAI - gemini-2.0-flash-exp)
+- Python 3.x
+- langchain-core, langchain-google-vertexai, termcolor
+
+================================================================================
+## SECTION 2: ARCHITECTURE DECISIONS
+================================================================================
+
+### Core Principles:
+1. ✅ **Incremental Development** - Build stage by stage, test each stage
+2. ✅ **Modular Design** - Each agent in separate file
+3. ✅ **Get Permission** - Always ask before generating code
+4. ✅ **Testable** - Each stage must be independently testable
+5. ✅ **Git Branching** - Each stage in separate branch, merge to master
+
+### File Structure:
+```
+/home/bhagavan/aura/dprai/src/
+├── config.py                    # LLM config & settings
+├── lg_utility.py                # Helper functions (graph viz, state dump)
+├── dpr_orchestrator.py          # Main orchestrator (imports all agents)
+├── data_collection_agent.py     # Stage 2 agent
+├── financial_agent.py           # Stage 3 agent (planned)
+├── document_generator.py        # Stage 4 agent (planned)
+└── dpr_main.py                  # Entry point for testing
+```
+
+### State Structure:
+```python
+class DPRState(TypedDict):
+    messages: Annotated[list[BaseMessage], add_messages]
+    project_data: dict          # Collected from user
+    validation: dict            # Validation results
+    dpr_sections: dict          # Generated DPR sections
+    current_stage: str          # Current processing stage
+```
+
+### Agent Pattern (from reference code):
+- Each agent has init function
+- Agent function (main logic)
+- Uses LLM with tools when needed
+- Updates state
+- Returns modified state
+
+### Orchestrator Pattern:
+- Imports all agents
+- Builds StateGraph
+- Adds nodes (one per agent/function)
+- Adds edges (defines flow)
+- Compiles graph
+- Saves PNG visualization
+
+### Naming Conventions:
+- Files: `{agent_name}_agent.py`
+- Functions: `{agent_name}_agent(state)` or `{function_name}(state)`
+- Git branches: `feature/stage-{N}-{description}`
+
+================================================================================
+## SECTION 3: STAGE-BY-STAGE PLAN
+================================================================================
+
+### COMPLETED STAGES:
+
+**Stage 1: Foundation & Basic Orchestrator** ✅
+- Branch: `feature/stage-1-orchestrator-foundation`
+- Files created:
+  * config.py
+  * lg_utility.py
+  * dpr_orchestrator.py (4 dummy nodes)
+  * dpr_main.py
+- Graph: START → INIT → COORDINATOR → PLANNER → FORMATTER → END
+- Status: ✅ Tested and working
+
+**Stage 2: Data Collection Agent** ✅
+- Branch: `feature/stage-2-data-collection-agent`
+- Files added/modified:
+  * data_collection_agent.py (NEW)
+  * dpr_orchestrator.py (UPDATED - integrated data agent)
+- Features:
+  * LLM-powered data extraction
+  * Validates 7 required fields: cluster_type, location, members, project_cost, 
+    facility_type, grant_scheme, subsidy_range
+  * Type validation (integers, numbers)
+  * Range validation (members > 0, cost > 0)
+  * Stores in state["project_data"]
+- Graph: START → INIT → DATA_COLLECTION → COORDINATOR → PLANNER → FORMATTER → END
+- Status: ✅ Tested and working
+
+### PLANNED STAGES:
+
+**Stage 3: Financial Modeling Agent** (NEXT)
+- Branch: `feature/stage-3-financial-agent`
+- File: `financial_agent.py`
+- Will calculate:
+  * NPV (Net Present Value)
+  * IRR (Internal Rate of Return)
+  * DSCR (Debt Service Coverage Ratio) - must be >3:1
+  * Break-even point - must be <60%
+  * Payback period
+  * 10-year financial projections
+  * Loan amortization schedule
+- Validates MSE-CDP requirements
+- Stores in state["dpr_sections"]["financial"]
+
+**Stage 4: Document Generation Agent**
+- File: `document_generator.py`
+- Generates actual DPR sections
+- Formats as professional document
+- Creates downloadable output
+
+**Stage 5+: Additional Agents**
+- Technical Feasibility Agent
+- Compliance Validation Agent
+- Market Analysis Agent
+- Risk Analysis Agent
+- etc.
+
+================================================================================
+## SECTION 4: REFERENCE CODE PATTERNS
+================================================================================
+
+### Reference Architecture (from uploaded examples):
+The user provided working examples of a multi-agent orchestrator that:
+- Coordinates between 3 vendor agents (Flipkart, Amazon, Sapna)
+- Each agent has quotation and order placement modes
+- Uses tools (item lookup, pricing, delivery, order placement)
+- Orchestrator compares quotes and splits orders across vendors
+
+Key patterns observed:
+1. Each agent in separate file
+2. Agent has multiple tools bound to LLM
+3. Two modes: QUOTATION_MODE and ORDER_MODE (different tool sets)
+4. Router function for conditional edges
+5. Summarize node at the end
+6. Tools are Python functions with @tool decorator
+
+### Sample Agent Structure:
+```python
+# {vendor}_order_agent.py
+
+def {vendor}_agent_init(state):
+    # Display input
+    return state
+
+def {vendor}_agent(state, llm_quotation, llm_order):
+    # Main agent logic
+    # Uses different LLM bindings based on mode
+    return state
+
+def {vendor}_order_summarize(state, llm):
+    # Summarize results
+    return state
+
+def router(state):
+    # Route to tools or summarize
+    return "tools" or "SUMMARIZE"
+
+def {vendor}_build_order_agent():
+    # Build graph
+    builder = StateGraph(MessagesState)
+    builder.add_node("INIT", init_func)
+    builder.add_node("AGENT", agent_func)
+    builder.add_node("tools", ToolNode(tools))
+    builder.add_node("SUMMARIZE", summarize_func)
+    # Add edges
+    # Compile
+    return graph
+
+# Export graph
+{vendor}_graph = {vendor}_build_order_agent()
+```
+
+================================================================================
+## SECTION 5: USER REQUIREMENTS & CONSTRAINTS
+================================================================================
+
+### Must-Have Features:
+1. ✅ Incremental testing at each stage
+2. ✅ Each agent in separate file (modular)
+3. ✅ Validate data at each step
+4. ✅ Use Google Gemini (ChatVertexAI)
+5. ✅ Generate 21 sections of MSE-CDP compliant DPR
+6. ✅ Real-time validation of financial viability
+7. ✅ Sector-specific content generation
+8. ✅ User guidance through data collection
+
+### User Workflow Preferences:
+1. **Always ask permission before generating code**
+2. **Test each stage before moving to next**
+3. **Use Git branching for each stage**
+4. **Keep dpr_main.py simple and unchanged when possible**
+5. **Show colored console output for tracking**
+6. **Generate graph PNG visualization**
+
+### DPR Requirements:
+- 21 mandatory sections (MSE-CDP compliant)
+- Financial viability checks:
+  * NPV > 0
+  * IRR > 10%
+  * DSCR > 3:1
+  * Break-even < 60%
+  * 60% capacity utilization proof
+- Include: SPV structure, shareholding, governance
+- Include: 10-year projections
+- Include: compliance documents checklist
+
+================================================================================
+## SECTION 6: CURRENT STATE (END OF STAGE 2)
+================================================================================
+
+### Working Files:
+1. config.py - Configuration (LLM model, DPR sections list, timeouts)
+2. lg_utility.py - Utilities (save_graph_as_png, dump_state, format_output)
+3. dpr_orchestrator.py - Main orchestrator with 5 nodes
+4. data_collection_agent.py - Data extraction and validation
+5. dpr_main.py - Test entry point
+
+### Current Graph Flow:
+```
+START 
+  ↓
+ORCHESTRATOR_INIT (initialize state)
+  ↓
+DATA_COLLECTION_AGENT (extract & validate project data)
+  ↓
+COORDINATOR_AGENT (use collected data to coordinate)
+  ↓
+WORKFLOW_PLANNER (plan next steps - dummy)
+  ↓
+OUTPUT_FORMATTER (format final output with project summary)
+  ↓
+END
+```
+
+### Test Results (Stage 2):
+✅ All nodes execute successfully
+✅ Data extracted: cluster_type, location, members, project_cost, facility_type, 
+   grant_scheme, subsidy_range
+✅ Validation: All required fields present
+✅ Project summary displayed in output
+✅ Ready for Stage 3
+
+### Sample Test Input:
+```python
+prompt = """
+I need to create a DPR for my MSME cluster project with the following details:
+- Cluster Type: Printing Industry
+- Location: Tirupati, Andhra Pradesh
+- Number of Members: 50 units
+- Project Cost: ₹8.2 crore
+- Common Facility Centre: Digital Printing Equipment
+- Seeking: MSE-CDP Grant (60-80% subsidy)
+Please help me generate a complete DPR with all 21 sections.
+"""
+```
+
+### Sample Output (Stage 2):
+```json
+{
+  "status": "Stage 2 Complete",
+  "orchestrator": "✅ Functional",
+  "data_collection": "✅ Integrated",
+  "project_data_collected": 8,
+  "validation": "✅ Passed",
+  "project_summary": {
+    "cluster": "Printing Industry",
+    "location": "Tirupati, Andhra Pradesh",
+    "members": 50,
+    "cost": 82000000
+  },
+  "next_step": "Stage 3 - Add Financial Modeling Agent"
+}
+```
+
+================================================================================
+## SECTION 7: NEXT STEPS (STAGE 3)
+================================================================================
+
+### Stage 3 Plan: Financial Modeling Agent
+
+**What to build:**
+- File: `financial_agent.py`
+- Calculate financial metrics using collected project data
+- Generate 10-year projections
+- Validate MSE-CDP compliance requirements
+
+**Integration:**
+- Import into dpr_orchestrator.py
+- Add node: FINANCIAL_MODELING_AGENT
+- Insert after DATA_COLLECTION_AGENT, before COORDINATOR_AGENT
+- Store results in state["dpr_sections"]["financial"]
+
+**Awaiting user permission to proceed with Stage 3.**
+
+================================================================================
+## SECTION 8: HOW TO USE THIS CONTEXT DOCUMENT
+================================================================================
+
+### To Restore Context in New Chat:
+
+1. **Start new chat with Claude**
+
+2. **Share this entire document** with message:
+   ```
+   I'm continuing work on the DPR Automation Platform project.
+   Here is the complete context from our previous conversation.
+   Please read this and confirm you understand where we are.
+   
+   [PASTE ENTIRE CONTEXT DOCUMENT]
+   
+   Current Status: Completed Stage 2, ready for Stage 3
+   Question: [Your question or "Ready to proceed with Stage 3"]
+   ```
+
+3. **Claude will:**
+   - Understand full project context
+   - Know all decisions made
+   - Remember architecture patterns
+   - Continue from current stage
+   - Maintain same working style (ask permission, incremental, etc.)
+
+### Quick Reference Commands:
+
+**To test current stage:**
+```bash
+cd /home/bhagavan/aura/dprai/src/
+python dpr_main.py
+```
+
+**To create new stage branch:**
+```bash
+git checkout -b feature/stage-{N}-{description}
+```
+
+**To see graph structure:**
+```bash
+# PNG file generated automatically
+# Location: dpr_orchestrator_graph.png
+```
+
+================================================================================
+## SECTION 9: IMPORTANT NOTES
+================================================================================
+
+### Working Environment:
+- User's system: Ubuntu 22.04
+- Python environment: (dpr) virtual environment
+- Working directory: /home/bhagavan/aura/dprai/src/
+
+### User Preferences:
+- Uses "dpr_main.py" (not main.py)
+- Wants modular design (agent per file)
+- Wants to test each stage before proceeding
+- Uses Git for version control
+- Values clear communication and asking permission
+
+### Communication Style:
+- Always ask before generating code
+- Explain what will be done before doing it
+- Show file structure clearly
+- Provide download links for all files
+- Give clear "Ready to proceed?" confirmations
+- Use emojis for visual clarity (✅ ❌ 🎯 etc.)
+
+### Technical Details:
+- LLM Model: "gemini-2.0-flash-exp"
+- Uses ChatVertexAI from langchain-google-vertexai
+- Colored output with termcolor
+- Graph visualization with save_graph_as_png
+- State uses TypedDict with Annotated messages
+
+================================================================================
+## SECTION 10: CONTACT & SESSION INFO
+================================================================================
+
+**Original Session Date:** October 27, 2025
+**User:** bhagavan@auranet (Bengaluru, Karnataka, IN)
+**Project Path:** /home/bhagavan/aura/dprai/src/
+
+**Stages Completed:**
+- ✅ Stage 1: Foundation & Basic Orchestrator
+- ✅ Stage 2: Data Collection Agent
+
+**Current Stage:** Ready for Stage 3: Financial Modeling Agent
+
+**Git Branches:**
+- feature/stage-1-orchestrator-foundation (merged)
+- feature/stage-2-data-collection-agent (merged)
+- feature/stage-3-financial-agent (to be created)
+
+================================================================================
+END OF CONTEXT DOCUMENT
+================================================================================
+
+This document contains ALL instructions, decisions, code patterns, and context
+needed to continue the DPR Automation Platform project in a new chat session.
+
+Last updated: After successful Stage 2 testing
+Version: 1.0
