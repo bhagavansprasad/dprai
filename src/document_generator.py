@@ -1,12 +1,20 @@
 # document_generator.py
 """
-Document Generation Agent - Stage 4
+Document Generation Agent - Stage 5
 Generates DPR sections in Markdown format using real collected data
 
-Sections generated (Phase 1 - 3 sections):
+Sections generated (Phase 2 - 8 sections total):
+Stage 4 (3 sections):
 1. Executive Summary
 2. Organization Details
 3. Financial Plan
+
+Stage 5 (5 NEW sections):
+4. Project Introduction & Background
+5. Cluster Profile Analysis
+6. Technical Feasibility Study
+7. Market Analysis & Demand Assessment
+8. Implementation Schedule & Timeline
 
 Uses: Template structure + LLM content enhancement
 Format: Markdown
@@ -98,6 +106,133 @@ def get_financial_plan_template() -> str:
 
 ## Financial Feasibility Assessment
 {feasibility_assessment}
+"""
+    return template
+
+
+# ============================================================================
+# STAGE 5: NEW SECTION TEMPLATES
+# ============================================================================
+
+def get_project_introduction_template() -> str:
+    """
+    Template for Project Introduction & Background section
+    """
+    template = """# PROJECT INTRODUCTION & BACKGROUND
+
+## Project Genesis
+{project_genesis}
+
+## Problem Statement
+{problem_statement}
+
+## Project Objectives
+{project_objectives}
+
+## Expected Outcomes
+{expected_outcomes}
+
+## Project Scope
+{project_scope}
+"""
+    return template
+
+
+def get_cluster_profile_template() -> str:
+    """
+    Template for Cluster Profile Analysis section
+    """
+    template = """# CLUSTER PROFILE ANALYSIS
+
+## Cluster Overview
+{cluster_overview}
+
+## Industry Characteristics
+{industry_characteristics}
+
+## Current Challenges
+{current_challenges}
+
+## Competitive Advantages
+{competitive_advantages}
+
+## Growth Potential
+{growth_potential}
+"""
+    return template
+
+
+def get_technical_feasibility_template() -> str:
+    """
+    Template for Technical Feasibility Study section
+    """
+    template = """# TECHNICAL FEASIBILITY STUDY
+
+## Technology Overview
+{technology_overview}
+
+## Equipment & Machinery
+{equipment_machinery}
+
+## Production Process
+{production_process}
+
+## Capacity Analysis
+{capacity_analysis}
+
+## Technical Specifications
+{technical_specifications}
+
+## Technology Transfer & Training
+{technology_training}
+"""
+    return template
+
+
+def get_market_analysis_template() -> str:
+    """
+    Template for Market Analysis & Demand Assessment section
+    """
+    template = """# MARKET ANALYSIS & DEMAND ASSESSMENT
+
+## Market Size & Trends
+{market_size_trends}
+
+## Target Market Segments
+{target_segments}
+
+## Competition Analysis
+{competition_analysis}
+
+## Demand Projections
+{demand_projections}
+
+## Market Entry Strategy
+{market_entry}
+"""
+    return template
+
+
+def get_implementation_schedule_template() -> str:
+    """
+    Template for Implementation Schedule & Timeline section
+    """
+    template = """# IMPLEMENTATION SCHEDULE & TIMELINE
+
+## Project Phases
+{project_phases}
+
+## Timeline & Milestones
+{timeline_milestones}
+
+## Critical Path Activities
+{critical_path}
+
+## Resource Deployment Plan
+{resource_deployment}
+
+## Monitoring Checkpoints
+{monitoring_checkpoints}
 """
     return template
 
@@ -302,17 +437,251 @@ NOTE: The financial metrics section is already formatted above, include it in yo
 
 
 # ============================================================================
+# STAGE 5: NEW CONTENT GENERATORS
+# ============================================================================
+
+def generate_project_introduction(project_data: Dict, llm) -> str:
+    """
+    Generate Project Introduction & Background using Template + LLM
+    """
+    print("  📝 Generating: Project Introduction & Background")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    location = project_data.get("location", "N/A")
+    members = project_data.get("members", 0)
+    facility_type = project_data.get("facility_type", "N/A")
+    cost = project_data.get("project_cost", 0)
+    
+    system_prompt = """You are a professional DPR writer specializing in MSME cluster development.
+Generate clear, compelling content for the Project Introduction & Background section.
+Focus on the rationale, context, and strategic importance of the project.
+Write in formal business language suitable for government submissions."""
+
+    user_prompt = f"""Generate content for Project Introduction & Background section:
+
+PROJECT DATA:
+- Cluster Type: {cluster_type}
+- Location: {location}
+- Members: {members} units
+- Facility Type: {facility_type}
+- Project Cost: ₹{cost:,}
+
+Generate detailed content covering:
+1. PROJECT GENESIS - How the project idea originated, stakeholder consultations
+2. PROBLEM STATEMENT - Current challenges faced by cluster members
+3. PROJECT OBJECTIVES - Clear, measurable objectives for the CFC
+4. EXPECTED OUTCOMES - Tangible benefits and impact expected
+5. PROJECT SCOPE - Boundaries and coverage of the project
+
+Write 5-6 comprehensive paragraphs. Be specific and strategic."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Project Introduction & Background generated")
+    
+    return f"# PROJECT INTRODUCTION & BACKGROUND\n\n{content}"
+
+
+def generate_cluster_profile(project_data: Dict, llm) -> str:
+    """
+    Generate Cluster Profile Analysis using Template + LLM
+    """
+    print("  📝 Generating: Cluster Profile Analysis")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    location = project_data.get("location", "N/A")
+    members = project_data.get("members", 0)
+    
+    system_prompt = """You are an industry analyst specializing in MSME clusters.
+Generate detailed, analytical content for the Cluster Profile Analysis section.
+Include industry-specific insights and competitive dynamics.
+Write professionally with data-driven insights."""
+
+    user_prompt = f"""Generate content for Cluster Profile Analysis:
+
+CLUSTER DATA:
+- Type: {cluster_type}
+- Location: {location}
+- Number of Units: {members}
+
+Generate comprehensive analysis covering:
+1. CLUSTER OVERVIEW - History, evolution, current state
+2. INDUSTRY CHARACTERISTICS - Specific to {cluster_type}
+3. CURRENT CHALLENGES - Infrastructure gaps, technology limitations, market access issues
+4. COMPETITIVE ADVANTAGES - Unique strengths of this cluster
+5. GROWTH POTENTIAL - Future opportunities and expansion possibilities
+
+Write 5-6 detailed paragraphs with industry-specific insights."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Cluster Profile Analysis generated")
+    
+    return f"# CLUSTER PROFILE ANALYSIS\n\n{content}"
+
+
+def generate_technical_feasibility(project_data: Dict, llm) -> str:
+    """
+    Generate Technical Feasibility Study using Template + LLM
+    """
+    print("  📝 Generating: Technical Feasibility Study")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    facility_type = project_data.get("facility_type", "N/A")
+    members = project_data.get("members", 0)
+    
+    system_prompt = """You are a technical consultant specializing in manufacturing and production facilities.
+Generate detailed technical content for the Technical Feasibility Study section.
+Include specific equipment, processes, and technical specifications.
+Write with technical accuracy and practical implementation focus."""
+
+    user_prompt = f"""Generate content for Technical Feasibility Study:
+
+PROJECT DATA:
+- Cluster Type: {cluster_type}
+- Facility Type: {facility_type}
+- Serving: {members} member units
+
+Generate technical analysis covering:
+1. TECHNOLOGY OVERVIEW - Modern technologies suitable for {facility_type}
+2. EQUIPMENT & MACHINERY - Specific equipment required, specifications
+3. PRODUCTION PROCESS - Step-by-step workflow and operations
+4. CAPACITY ANALYSIS - Production capacity, utilization projections
+5. TECHNICAL SPECIFICATIONS - Quality standards, technical parameters
+6. TECHNOLOGY TRANSFER & TRAINING - Training needs and skill development
+
+Write 6-7 paragraphs with specific technical details."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Technical Feasibility Study generated")
+    
+    return f"# TECHNICAL FEASIBILITY STUDY\n\n{content}"
+
+
+def generate_market_analysis(project_data: Dict, llm) -> str:
+    """
+    Generate Market Analysis & Demand Assessment using Template + LLM
+    """
+    print("  📝 Generating: Market Analysis & Demand Assessment")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    location = project_data.get("location", "N/A")
+    members = project_data.get("members", 0)
+    
+    system_prompt = """You are a market research analyst specializing in MSME sectors.
+Generate comprehensive market analysis for the Market Analysis & Demand Assessment section.
+Include market sizing, trends, competition, and demand projections.
+Use data-driven language with market insights."""
+
+    user_prompt = f"""Generate content for Market Analysis & Demand Assessment:
+
+PROJECT DATA:
+- Industry: {cluster_type}
+- Location: {location}
+- Cluster Size: {members} units
+
+Generate market analysis covering:
+1. MARKET SIZE & TRENDS - Current market size, growth trends, drivers
+2. TARGET MARKET SEGMENTS - B2B/B2C segments, customer profiles
+3. COMPETITION ANALYSIS - Key competitors, market positioning
+4. DEMAND PROJECTIONS - 5-10 year demand forecast with assumptions
+5. MARKET ENTRY STRATEGY - How cluster will access and grow market share
+
+Write 5-6 paragraphs with market data and strategic insights."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Market Analysis & Demand Assessment generated")
+    
+    return f"# MARKET ANALYSIS & DEMAND ASSESSMENT\n\n{content}"
+
+
+def generate_implementation_schedule(project_data: Dict, llm) -> str:
+    """
+    Generate Implementation Schedule & Timeline using Template + LLM
+    """
+    print("  📝 Generating: Implementation Schedule & Timeline")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cost = project_data.get("project_cost", 0)
+    facility_type = project_data.get("facility_type", "N/A")
+    
+    system_prompt = """You are a project management consultant specializing in infrastructure projects.
+Generate detailed implementation schedule for the Implementation Schedule & Timeline section.
+Include realistic timelines, milestones, and critical path activities.
+Write with project management rigor and practical implementation focus."""
+
+    user_prompt = f"""Generate content for Implementation Schedule & Timeline:
+
+PROJECT DATA:
+- Facility: {facility_type}
+- Budget: ₹{cost:,}
+
+Generate implementation plan covering:
+1. PROJECT PHASES - Pre-implementation, construction, commissioning, operations
+2. TIMELINE & MILESTONES - Month-by-month schedule with key milestones
+3. CRITICAL PATH ACTIVITIES - Dependencies and critical activities
+4. RESOURCE DEPLOYMENT PLAN - When resources (funds, equipment, people) deploy
+5. MONITORING CHECKPOINTS - Review points and progress tracking
+
+Include a realistic 12-18 month implementation timeline. Write 5-6 detailed paragraphs."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Implementation Schedule & Timeline generated")
+    
+    return f"# IMPLEMENTATION SCHEDULE & TIMELINE\n\n{content}"
+
+
+# ============================================================================
 # MAIN AGENT FUNCTION
 # ============================================================================
 
 def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Document Generation Agent - Generates 3 DPR sections in Markdown format
+    Document Generation Agent - Generates 8 DPR sections in Markdown format
     
-    Sections generated:
+    Stage 4 (3 sections):
     1. Executive Summary
     2. Organization Details
     3. Financial Plan
+    
+    Stage 5 (5 NEW sections):
+    4. Project Introduction & Background
+    5. Cluster Profile Analysis
+    6. Technical Feasibility Study
+    7. Market Analysis & Demand Assessment
+    8. Implementation Schedule & Timeline
     
     Uses: Real data from state, Template + LLM approach
     Format: Markdown
@@ -335,13 +704,18 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     print(f"\n📄 Generating DPR sections for {project_data.get('cluster_type', 'project')}...")
     print(f"   Format: Markdown")
     print(f"   Method: Template + LLM")
-    print(f"   Content: Real data\n")
+    print(f"   Content: Real data")
+    print(f"   Stage: 5 (8 sections total)\n")
     
     # Initialize LLM
     llm = ChatVertexAI(model_name=LLM_MODEL, temperature=0.3)
     
-    print("🔄 Generating 3 sections:")
+    print("🔄 Generating 8 sections:")
     print("="*50)
+    
+    # ========================================================================
+    # STAGE 4 SECTIONS (already implemented)
+    # ========================================================================
     
     # Generate Section 1: Executive Summary
     try:
@@ -374,15 +748,79 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
         print(f"  ❌ Error generating Financial Plan: {e}")
         state["dpr_sections"]["financial_plan"] = "# FINANCIAL PLAN\n\nError generating content."
     
+    print()
+    
+    # ========================================================================
+    # STAGE 5 SECTIONS (NEW - 5 sections)
+    # ========================================================================
+    
+    # Generate Section 4: Project Introduction & Background
+    try:
+        project_intro = generate_project_introduction(project_data, llm)
+        state["dpr_sections"]["project_introduction"] = project_intro
+        print("  ✅ Project Introduction & Background complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Project Introduction: {e}")
+        state["dpr_sections"]["project_introduction"] = "# PROJECT INTRODUCTION & BACKGROUND\n\nError generating content."
+    
+    print()
+    
+    # Generate Section 5: Cluster Profile Analysis
+    try:
+        cluster_profile = generate_cluster_profile(project_data, llm)
+        state["dpr_sections"]["cluster_profile"] = cluster_profile
+        print("  ✅ Cluster Profile Analysis complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Cluster Profile: {e}")
+        state["dpr_sections"]["cluster_profile"] = "# CLUSTER PROFILE ANALYSIS\n\nError generating content."
+    
+    print()
+    
+    # Generate Section 6: Technical Feasibility Study
+    try:
+        technical_feasibility = generate_technical_feasibility(project_data, llm)
+        state["dpr_sections"]["technical_feasibility"] = technical_feasibility
+        print("  ✅ Technical Feasibility Study complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Technical Feasibility: {e}")
+        state["dpr_sections"]["technical_feasibility"] = "# TECHNICAL FEASIBILITY STUDY\n\nError generating content."
+    
+    print()
+    
+    # Generate Section 7: Market Analysis & Demand Assessment
+    try:
+        market_analysis = generate_market_analysis(project_data, llm)
+        state["dpr_sections"]["market_analysis"] = market_analysis
+        print("  ✅ Market Analysis & Demand Assessment complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Market Analysis: {e}")
+        state["dpr_sections"]["market_analysis"] = "# MARKET ANALYSIS & DEMAND ASSESSMENT\n\nError generating content."
+    
+    print()
+    
+    # Generate Section 8: Implementation Schedule & Timeline
+    try:
+        implementation_schedule = generate_implementation_schedule(project_data, llm)
+        state["dpr_sections"]["implementation_schedule"] = implementation_schedule
+        print("  ✅ Implementation Schedule & Timeline complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Implementation Schedule: {e}")
+        state["dpr_sections"]["implementation_schedule"] = "# IMPLEMENTATION SCHEDULE & TIMELINE\n\nError generating content."
+    
     print("="*50)
     print()
     
     # Summary
-    sections_generated = len([k for k in ["executive_summary", "organization_details", "financial_plan"] 
-                              if k in state["dpr_sections"]])
+    section_keys = [
+        "executive_summary", "organization_details", "financial_plan",
+        "project_introduction", "cluster_profile", "technical_feasibility",
+        "market_analysis", "implementation_schedule"
+    ]
+    sections_generated = len([k for k in section_keys if k in state["dpr_sections"]])
     
     print(f"✅ Document generation complete")
-    print(f"   Sections generated: {sections_generated}/3")
+    print(f"   Sections generated: {sections_generated}/8 (Stage 5)")
+    print(f"   Progress: {sections_generated}/21 total MSE-CDP sections")
     print(f"   Storage: state['dpr_sections'][section_name]")
     print(f"   Format: Markdown")
     print()
