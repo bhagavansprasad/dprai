@@ -1,0 +1,298 @@
+# 📚 FILE INDEX - DPR AUTOMATION PLATFORM
+
+All files available for download with descriptions.
+
+================================================================================
+## CONTEXT & DOCUMENTATION FILES
+================================================================================
+
+### MASTER_CONTEXT.txt (14KB) ⭐ MOST IMPORTANT
+**Purpose:** Complete project context for restoring in new chat
+**Contains:**
+- Full project overview and goals
+- All architecture decisions
+- Stage-by-stage plan (completed + planned)
+- Reference code patterns
+- User requirements & constraints
+- Current state and test results
+- Communication style guidelines
+- How to use this document
+
+**When to use:** Starting new chat, need complete understanding
+
+---
+
+### QUICK_REFERENCE.txt (1.4KB)
+**Purpose:** Fast lookup of current state
+**Contains:**
+- Current file structure
+- Graph flow diagram
+- Completed stages checklist
+- Next steps
+- Key rules summary
+- Test command
+
+**When to use:** Quick reminder, don't need full context
+
+---
+
+### HOW_TO_RESTORE_CONTEXT.md (4KB)
+**Purpose:** Guide for using context documents
+**Contains:**
+- Step-by-step instructions for new chat
+- Three different restoration options
+- Pro tips for maintaining context
+- Example prompts
+- FAQ
+
+**When to use:** First time needing to restore context, or as reference
+
+---
+
+### README_STAGE2.md (6.7KB)
+**Purpose:** Stage 2 specific documentation
+**Contains:**
+- Stage 2 changes and features
+- Setup instructions
+- Expected output examples
+- Git workflow commands
+- Troubleshooting
+- Testing different inputs
+
+**When to use:** Stage 2 reference, helping others understand Stage 2
+
+---
+
+### README.md (2.3KB)
+**Purpose:** Stage 1 documentation
+**Contains:**
+- Stage 1 setup
+- Initial graph structure
+- First-time setup instructions
+- Troubleshooting
+
+**When to use:** Understanding Stage 1, helping others get started
+
+---
+
+================================================================================
+## CODE FILES (CURRENT STAGE 2)
+================================================================================
+
+### config.py (659 bytes)
+**Purpose:** Configuration settings
+**Contains:**
+- LLM model name (gemini-2.0-flash-exp)
+- App settings (name, version)
+- DPR sections list
+- Agent configuration (timeout, retries)
+
+**Stage:** Stage 1 (unchanged in Stage 2)
+**Modify:** Only if changing LLM or adding settings
+
+---
+
+### lg_utility.py (2.4KB)
+**Purpose:** Helper utilities
+**Contains:**
+- save_graph_as_png() - Graph visualization
+- dump_state() - Debug state printing
+- format_output() - Pretty output formatting
+
+**Stage:** Stage 1 (unchanged in Stage 2)
+**Modify:** Only if adding new utility functions
+
+---
+
+### dpr_orchestrator.py (6.8KB) ⭐ CORE FILE
+**Purpose:** Main orchestrator that coordinates all agents
+**Contains:**
+- DPRState definition
+- Node functions (init, coordinator, planner, formatter)
+- Graph builder
+- Agent imports
+- Edge definitions
+
+**Stage:** Stage 2 (integrated data collection)
+**Modify:** Every stage (to add new agents)
+
+**Current Nodes:**
+1. ORCHESTRATOR_INIT
+2. DATA_COLLECTION_AGENT
+3. COORDINATOR_AGENT
+4. WORKFLOW_PLANNER
+5. OUTPUT_FORMATTER
+
+---
+
+### data_collection_agent.py (5.6KB)
+**Purpose:** Extract and validate project data from user input
+**Contains:**
+- data_collection_agent() - Main extraction function
+- extract_json_from_string() - Parse LLM JSON response
+- validate_project_data() - Validate required fields
+
+**Stage:** Stage 2 (new)
+**Modify:** Only if adding new fields to extract
+
+**Extracts:**
+- cluster_type, location, members, project_cost
+- facility_type, grant_scheme, subsidy_range
+
+---
+
+### dpr_main.py (1.6KB)
+**Purpose:** Entry point for testing
+**Contains:**
+- main() function with sample test prompt
+- Invokes orchestrator graph
+- Displays results
+
+**Stage:** Stage 1 (unchanged in Stage 2)
+**Modify:** Rarely (usually just run as-is)
+
+**Run with:** `python dpr_main.py`
+
+---
+
+================================================================================
+## FILES TO CREATE IN FUTURE STAGES
+================================================================================
+
+### financial_agent.py (Stage 3 - NEXT)
+**Purpose:** Financial modeling and calculations
+**Will contain:**
+- Calculate NPV, IRR, DSCR, break-even
+- 10-year projections
+- Loan amortization
+- Validate MSE-CDP requirements
+
+**Status:** Not yet created
+
+---
+
+### document_generator.py (Stage 4)
+**Purpose:** Generate actual DPR document sections
+**Will contain:**
+- Section templates
+- Content formatting
+- Document assembly
+
+**Status:** Not yet created
+
+---
+
+### technical_agent.py (Stage 5)
+**Purpose:** Technical feasibility analysis
+**Status:** Not yet created
+
+---
+
+### compliance_agent.py (Stage 6)
+**Purpose:** Compliance validation
+**Status:** Not yet created
+
+---
+
+================================================================================
+## HOW TO ORGANIZE THESE FILES
+================================================================================
+
+### Recommended Local Structure:
+
+```
+~/projects/dprai/
+├── docs/
+│   ├── MASTER_CONTEXT.txt           ⭐ Keep updated
+│   ├── QUICK_REFERENCE.txt          ⭐ Keep updated
+│   ├── HOW_TO_RESTORE_CONTEXT.md
+│   ├── README.md
+│   └── README_STAGE2.md
+│
+└── src/
+    ├── config.py
+    ├── lg_utility.py
+    ├── dpr_orchestrator.py
+    ├── data_collection_agent.py
+    ├── dpr_main.py
+    └── [future agent files]
+```
+
+### Git Tracking:
+
+```bash
+# Add documentation to Git
+git add docs/MASTER_CONTEXT.txt docs/QUICK_REFERENCE.txt
+git commit -m "Add context documents for session continuity"
+
+# Update after each stage
+# Edit MASTER_CONTEXT.txt to mark stage complete
+git add docs/MASTER_CONTEXT.txt
+git commit -m "Update context: Stage 2 complete"
+```
+
+---
+
+================================================================================
+## PRIORITY DOWNLOAD ORDER
+================================================================================
+
+If starting fresh, download in this order:
+
+1. ⭐ **MASTER_CONTEXT.txt** - Read this first!
+2. ⭐ **HOW_TO_RESTORE_CONTEXT.md** - Learn how to use context
+3. **config.py** - Required for code
+4. **lg_utility.py** - Required for code
+5. **dpr_orchestrator.py** - Core orchestrator
+6. **data_collection_agent.py** - Stage 2 agent
+7. **dpr_main.py** - Test file
+8. **QUICK_REFERENCE.txt** - Quick lookup
+9. **README_STAGE2.md** - Stage 2 details
+10. **README.md** - Stage 1 details
+
+---
+
+================================================================================
+## KEEPING DOCUMENTS UPDATED
+================================================================================
+
+### After Each Stage Completion:
+
+**Update MASTER_CONTEXT.txt:**
+- Section 6: Update "Current State"
+- Section 6: Add new test results
+- Section 7: Update "Next Steps"
+- Section 3: Mark stage as complete ✅
+
+**Update QUICK_REFERENCE.txt:**
+- Update file list
+- Update graph flow
+- Mark stage complete
+- Update "NEXT" section
+
+**Create Stage-Specific README:**
+- README_STAGE3.md (for Stage 3)
+- Follow same format as README_STAGE2.md
+
+---
+
+## 📝 SUMMARY
+
+**Core Files to Keep Updated:**
+- MASTER_CONTEXT.txt (most important!)
+- QUICK_REFERENCE.txt (fast reference)
+
+**Code Files:**
+- Download all .py files
+- Keep in sync with Git branches
+
+**Documentation:**
+- Keep stage-specific READMEs
+- Update after testing each stage
+
+---
+
+**Last Updated:** October 27, 2025 (End of Stage 2)
+**Total Files:** 9 available for download
+**Context Files:** 5 documentation files
+**Code Files:** 5 Python files (Stage 2 complete)
