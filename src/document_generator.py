@@ -1,9 +1,9 @@
 # document_generator.py
 """
-Document Generation Agent - Stage 6
+Document Generation Agent - Stage 7
 Generates DPR sections in Markdown format using real collected data
 
-Sections generated (Phase 3 - 13 sections total):
+Sections generated (Phase 4 - 18 sections total):
 Stage 4 (3 sections):
 1. Executive Summary
 2. Organization Details
@@ -16,12 +16,19 @@ Stage 5 (5 sections):
 7. Market Analysis & Demand Assessment
 8. Implementation Schedule & Timeline
 
-Stage 6 (5 NEW sections):
+Stage 6 (5 sections):
 9. Management & Organizational Structure
 10. Economic & Commercial Viability
 11. SWOT Analysis
 12. Risk Analysis & Mitigation
 13. Environmental & Social Impact Assessment
+
+Stage 7 (5 NEW sections):
+14. Quality Assurance & Standards
+15. Raw Material & Supply Chain Management
+16. Infrastructure & Utilities Requirements
+17. Legal & Regulatory Compliance
+18. Human Resource & Manpower Plan
 
 Uses: Template structure + LLM content enhancement
 Format: Markdown
@@ -364,6 +371,130 @@ def get_environmental_impact_template() -> str:
 
 ## CSR Initiatives
 {csr_initiatives}
+"""
+    return template
+
+
+# ============================================================================
+# STAGE 7: NEW SECTION TEMPLATES
+# ============================================================================
+
+def get_quality_assurance_template() -> str:
+    """
+    Template for Quality Assurance & Standards section
+    """
+    template = """# QUALITY ASSURANCE & STANDARDS
+
+## Quality Policy
+{quality_policy}
+
+## Quality Standards & Certifications
+{quality_standards}
+
+## Quality Control Processes
+{quality_control}
+
+## Testing & Inspection
+{testing_inspection}
+
+## Continuous Improvement
+{continuous_improvement}
+"""
+    return template
+
+
+def get_supply_chain_template() -> str:
+    """
+    Template for Raw Material & Supply Chain Management section
+    """
+    template = """# RAW MATERIAL & SUPPLY CHAIN MANAGEMENT
+
+## Raw Material Requirements
+{raw_material_requirements}
+
+## Supplier Identification
+{supplier_identification}
+
+## Supply Chain Strategy
+{supply_chain_strategy}
+
+## Inventory Management
+{inventory_management}
+
+## Logistics & Distribution
+{logistics_distribution}
+"""
+    return template
+
+
+def get_infrastructure_template() -> str:
+    """
+    Template for Infrastructure & Utilities Requirements section
+    """
+    template = """# INFRASTRUCTURE & UTILITIES REQUIREMENTS
+
+## Land & Building Requirements
+{land_building}
+
+## Power & Energy
+{power_energy}
+
+## Water & Effluent Treatment
+{water_treatment}
+
+## Communication & IT Infrastructure
+{communication_it}
+
+## Other Utilities
+{other_utilities}
+"""
+    return template
+
+
+def get_legal_compliance_template() -> str:
+    """
+    Template for Legal & Regulatory Compliance section
+    """
+    template = """# LEGAL & REGULATORY COMPLIANCE
+
+## Legal Structure
+{legal_structure}
+
+## Required Licenses & Permits
+{licenses_permits}
+
+## Regulatory Framework
+{regulatory_framework}
+
+## Compliance Timeline
+{compliance_timeline}
+
+## Legal Risks & Mitigation
+{legal_risks}
+"""
+    return template
+
+
+def get_human_resource_template() -> str:
+    """
+    Template for Human Resource & Manpower Plan section
+    """
+    template = """# HUMAN RESOURCE & MANPOWER PLAN
+
+## Manpower Requirements
+{manpower_requirements}
+
+## Recruitment Strategy
+{recruitment_strategy}
+
+## Training & Development
+{training_development}
+
+## Compensation & Benefits
+{compensation_benefits}
+
+## HR Policies
+{hr_policies}
 """
     return template
 
@@ -1031,12 +1162,238 @@ Write 5-6 detailed paragraphs with specific environmental and social considerati
 
 
 # ============================================================================
+# STAGE 7: NEW CONTENT GENERATORS
+# ============================================================================
+
+def generate_quality_assurance(project_data: Dict, llm) -> str:
+    """
+    Generate Quality Assurance & Standards using Template + LLM
+    """
+    print("  📝 Generating: Quality Assurance & Standards")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    facility_type = project_data.get("facility_type", "N/A")
+    members = project_data.get("members", 0)
+    
+    system_prompt = """You are a quality management consultant specializing in manufacturing and MSME sectors.
+Generate comprehensive content for the Quality Assurance & Standards section.
+Include quality standards, certifications, and continuous improvement processes.
+Write with focus on industry best practices and quality excellence."""
+
+    user_prompt = f"""Generate content for Quality Assurance & Standards:
+
+PROJECT DATA:
+- Industry: {cluster_type}
+- Facility: {facility_type}
+- Serving: {members} member units
+
+Generate quality assurance content covering:
+1. QUALITY POLICY - Quality vision, commitment to excellence
+2. QUALITY STANDARDS & CERTIFICATIONS - ISO standards, industry certifications
+3. QUALITY CONTROL PROCESSES - Inspection points, quality checks
+4. TESTING & INSPECTION - Testing protocols, equipment calibration
+5. CONTINUOUS IMPROVEMENT - Kaizen, Six Sigma, quality improvement cycles
+
+Write 5-6 detailed paragraphs with specific quality management practices."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Quality Assurance & Standards generated")
+    
+    return f"# QUALITY ASSURANCE & STANDARDS\n\n{content}"
+
+
+def generate_supply_chain(project_data: Dict, llm) -> str:
+    """
+    Generate Raw Material & Supply Chain Management using Template + LLM
+    """
+    print("  📝 Generating: Raw Material & Supply Chain Management")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    location = project_data.get("location", "N/A")
+    facility_type = project_data.get("facility_type", "N/A")
+    
+    system_prompt = """You are a supply chain consultant specializing in MSME manufacturing.
+Generate comprehensive content for the Raw Material & Supply Chain Management section.
+Include supplier strategies, inventory management, and logistics.
+Write with practical supply chain optimization focus."""
+
+    user_prompt = f"""Generate content for Raw Material & Supply Chain Management:
+
+PROJECT DATA:
+- Industry: {cluster_type}
+- Location: {location}
+- Facility: {facility_type}
+
+Generate supply chain content covering:
+1. RAW MATERIAL REQUIREMENTS - Materials needed, specifications, quantities
+2. SUPPLIER IDENTIFICATION - Local/national suppliers, sourcing strategy
+3. SUPPLY CHAIN STRATEGY - Procurement approach, vendor relationships
+4. INVENTORY MANAGEMENT - Stock levels, reorder points, JIT principles
+5. LOGISTICS & DISTRIBUTION - Transportation, warehousing, distribution
+
+Write 5-6 detailed paragraphs with specific supply chain strategies."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Raw Material & Supply Chain Management generated")
+    
+    return f"# RAW MATERIAL & SUPPLY CHAIN MANAGEMENT\n\n{content}"
+
+
+def generate_infrastructure(project_data: Dict, llm) -> str:
+    """
+    Generate Infrastructure & Utilities Requirements using Template + LLM
+    """
+    print("  📝 Generating: Infrastructure & Utilities Requirements")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    facility_type = project_data.get("facility_type", "N/A")
+    location = project_data.get("location", "N/A")
+    cost = project_data.get("project_cost", 0)
+    
+    system_prompt = """You are an infrastructure planning consultant for industrial facilities.
+Generate comprehensive content for the Infrastructure & Utilities Requirements section.
+Include detailed specifications for land, utilities, and infrastructure needs.
+Write with technical accuracy and practical implementation focus."""
+
+    user_prompt = f"""Generate content for Infrastructure & Utilities Requirements:
+
+PROJECT DATA:
+- Industry: {cluster_type}
+- Facility: {facility_type}
+- Location: {location}
+- Investment: ₹{cost:,}
+
+Generate infrastructure requirements covering:
+1. LAND & BUILDING REQUIREMENTS - Area needed, building specifications, layout
+2. POWER & ENERGY - Electricity requirements, backup power, renewable energy
+3. WATER & EFFLUENT TREATMENT - Water supply, consumption, wastewater treatment
+4. COMMUNICATION & IT INFRASTRUCTURE - Internet, networking, software systems
+5. OTHER UTILITIES - Gas, compressed air, HVAC, safety systems
+
+Write 5-6 detailed paragraphs with specific infrastructure specifications."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Infrastructure & Utilities Requirements generated")
+    
+    return f"# INFRASTRUCTURE & UTILITIES REQUIREMENTS\n\n{content}"
+
+
+def generate_legal_compliance(project_data: Dict, llm) -> str:
+    """
+    Generate Legal & Regulatory Compliance using Template + LLM
+    """
+    print("  📝 Generating: Legal & Regulatory Compliance")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    location = project_data.get("location", "N/A")
+    grant_scheme = project_data.get("grant_scheme", "N/A")
+    
+    system_prompt = """You are a legal and compliance consultant specializing in MSME regulations.
+Generate comprehensive content for the Legal & Regulatory Compliance section.
+Include all required licenses, permits, and regulatory frameworks.
+Write with detailed compliance requirements and timelines."""
+
+    user_prompt = f"""Generate content for Legal & Regulatory Compliance:
+
+PROJECT DATA:
+- Industry: {cluster_type}
+- Location: {location}
+- Grant Scheme: {grant_scheme}
+
+Generate legal compliance content covering:
+1. LEGAL STRUCTURE - SPV registration, legal entity formation
+2. REQUIRED LICENSES & PERMITS - Factory license, trade license, GST, pollution clearances
+3. REGULATORY FRAMEWORK - Central and state regulations, labor laws, safety norms
+4. COMPLIANCE TIMELINE - When each license/permit must be obtained
+5. LEGAL RISKS & MITIGATION - Regulatory risks, compliance strategies
+
+Write 5-6 detailed paragraphs with specific compliance requirements."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Legal & Regulatory Compliance generated")
+    
+    return f"# LEGAL & REGULATORY COMPLIANCE\n\n{content}"
+
+
+def generate_human_resource(project_data: Dict, llm) -> str:
+    """
+    Generate Human Resource & Manpower Plan using Template + LLM
+    """
+    print("  📝 Generating: Human Resource & Manpower Plan")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    members = project_data.get("members", 0)
+    facility_type = project_data.get("facility_type", "N/A")
+    
+    system_prompt = """You are a human resources consultant specializing in manufacturing and MSME sectors.
+Generate comprehensive content for the Human Resource & Manpower Plan section.
+Include staffing requirements, recruitment, training, and HR policies.
+Write with practical HR management and workforce development focus."""
+
+    user_prompt = f"""Generate content for Human Resource & Manpower Plan:
+
+PROJECT DATA:
+- Industry: {cluster_type}
+- Facility: {facility_type}
+- Serving: {members} member units
+
+Generate HR plan covering:
+1. MANPOWER REQUIREMENTS - Positions needed, skill requirements, headcount
+2. RECRUITMENT STRATEGY - Hiring approach, local employment, skill sourcing
+3. TRAINING & DEVELOPMENT - Technical training, skill upgradation programs
+4. COMPENSATION & BENEFITS - Salary structure, benefits, incentives
+5. HR POLICIES - Leave policy, performance management, employee welfare
+
+Write 5-6 detailed paragraphs with specific HR strategies and workforce plans."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Human Resource & Manpower Plan generated")
+    
+    return f"# HUMAN RESOURCE & MANPOWER PLAN\n\n{content}"
+
+
+# ============================================================================
 # MAIN AGENT FUNCTION
 # ============================================================================
 
 def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Document Generation Agent - Generates 13 DPR sections in Markdown format
+    Document Generation Agent - Generates 18 DPR sections in Markdown format
     
     Stage 4 (3 sections):
     1. Executive Summary
@@ -1050,12 +1407,19 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     7. Market Analysis & Demand Assessment
     8. Implementation Schedule & Timeline
     
-    Stage 6 (5 NEW sections):
+    Stage 6 (5 sections):
     9. Management & Organizational Structure
     10. Economic & Commercial Viability
     11. SWOT Analysis
     12. Risk Analysis & Mitigation
     13. Environmental & Social Impact Assessment
+    
+    Stage 7 (5 NEW sections):
+    14. Quality Assurance & Standards
+    15. Raw Material & Supply Chain Management
+    16. Infrastructure & Utilities Requirements
+    17. Legal & Regulatory Compliance
+    18. Human Resource & Manpower Plan
     
     Uses: Real data from state, Template + LLM approach
     Format: Markdown
@@ -1079,12 +1443,12 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     print(f"   Format: Markdown")
     print(f"   Method: Template + LLM")
     print(f"   Content: Real data")
-    print(f"   Stage: 6 (13 sections total)\n")
+    print(f"   Stage: 7 (18 sections total)\n")
     
     # Initialize LLM
     llm = ChatVertexAI(model_name=LLM_MODEL, temperature=0.3)
     
-    print("🔄 Generating 13 sections:")
+    print("🔄 Generating 18 sections:")
     print("="*50)
     
     # ========================================================================
@@ -1184,7 +1548,7 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     print()
     
     # ========================================================================
-    # STAGE 6 SECTIONS (NEW - 5 sections)
+    # STAGE 6 SECTIONS
     # ========================================================================
     
     # Generate Section 9: Management & Organizational Structure
@@ -1240,6 +1604,65 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
         print(f"  ❌ Error generating Environmental Impact: {e}")
         state["dpr_sections"]["environmental_impact"] = "# ENVIRONMENTAL & SOCIAL IMPACT ASSESSMENT\n\nError generating content."
     
+    print()
+    
+    # ========================================================================
+    # STAGE 7 SECTIONS (NEW - 5 sections)
+    # ========================================================================
+    
+    # Generate Section 14: Quality Assurance & Standards
+    try:
+        quality_assurance = generate_quality_assurance(project_data, llm)
+        state["dpr_sections"]["quality_assurance"] = quality_assurance
+        print("  ✅ Quality Assurance & Standards complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Quality Assurance: {e}")
+        state["dpr_sections"]["quality_assurance"] = "# QUALITY ASSURANCE & STANDARDS\n\nError generating content."
+    
+    print()
+    
+    # Generate Section 15: Raw Material & Supply Chain Management
+    try:
+        supply_chain = generate_supply_chain(project_data, llm)
+        state["dpr_sections"]["supply_chain"] = supply_chain
+        print("  ✅ Raw Material & Supply Chain Management complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Supply Chain: {e}")
+        state["dpr_sections"]["supply_chain"] = "# RAW MATERIAL & SUPPLY CHAIN MANAGEMENT\n\nError generating content."
+    
+    print()
+    
+    # Generate Section 16: Infrastructure & Utilities Requirements
+    try:
+        infrastructure = generate_infrastructure(project_data, llm)
+        state["dpr_sections"]["infrastructure"] = infrastructure
+        print("  ✅ Infrastructure & Utilities Requirements complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Infrastructure: {e}")
+        state["dpr_sections"]["infrastructure"] = "# INFRASTRUCTURE & UTILITIES REQUIREMENTS\n\nError generating content."
+    
+    print()
+    
+    # Generate Section 17: Legal & Regulatory Compliance
+    try:
+        legal_compliance = generate_legal_compliance(project_data, llm)
+        state["dpr_sections"]["legal_compliance"] = legal_compliance
+        print("  ✅ Legal & Regulatory Compliance complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Legal Compliance: {e}")
+        state["dpr_sections"]["legal_compliance"] = "# LEGAL & REGULATORY COMPLIANCE\n\nError generating content."
+    
+    print()
+    
+    # Generate Section 18: Human Resource & Manpower Plan
+    try:
+        human_resource = generate_human_resource(project_data, llm)
+        state["dpr_sections"]["human_resource"] = human_resource
+        print("  ✅ Human Resource & Manpower Plan complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Human Resource: {e}")
+        state["dpr_sections"]["human_resource"] = "# HUMAN RESOURCE & MANPOWER PLAN\n\nError generating content."
+    
     print("="*50)
     print()
     
@@ -1249,12 +1672,14 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
         "project_introduction", "cluster_profile", "technical_feasibility",
         "market_analysis", "implementation_schedule",
         "management_structure", "economic_viability", "swot_analysis",
-        "risk_analysis", "environmental_impact"
+        "risk_analysis", "environmental_impact",
+        "quality_assurance", "supply_chain", "infrastructure",
+        "legal_compliance", "human_resource"
     ]
     sections_generated = len([k for k in section_keys if k in state["dpr_sections"]])
     
     print(f"✅ Document generation complete")
-    print(f"   Sections generated: {sections_generated}/13 (Stage 6)")
+    print(f"   Sections generated: {sections_generated}/18 (Stage 7)")
     print(f"   Progress: {sections_generated}/21 total MSE-CDP sections ({round(sections_generated/21*100, 1)}%)")
     print(f"   Storage: state['dpr_sections'][section_name]")
     print(f"   Format: Markdown")

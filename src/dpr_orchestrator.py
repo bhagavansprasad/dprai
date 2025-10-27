@@ -1,6 +1,6 @@
 # dpr_orchestrator.py
 """
-DPR Orchestrator Agent - Stage 6: Continue Document Expansion
+DPR Orchestrator Agent - Stage 7: Near Completion
 Orchestrator with modular agent integration
 """
 from typing import TypedDict, Annotated
@@ -108,10 +108,12 @@ def coordinator_agent(state: DPRState) -> DPRState:
                                     "project_introduction", "cluster_profile", "technical_feasibility",
                                     "market_analysis", "implementation_schedule",
                                     "management_structure", "economic_viability", "swot_analysis",
-                                    "risk_analysis", "environmental_impact"] 
+                                    "risk_analysis", "environmental_impact",
+                                    "quality_assurance", "supply_chain", "infrastructure",
+                                    "legal_compliance", "human_resource"] 
                        if k in dpr_sections]
         if doc_sections:
-            print(f"📄 Documents Generated: {len(doc_sections)}/13 sections (Stage 6)")
+            print(f"📄 Documents Generated: {len(doc_sections)}/18 sections (Stage 7)")
             response_text += f" Generated {len(doc_sections)} DPR sections."
     else:
         response_text = "⚠️ Project data incomplete. May need additional information."
@@ -163,14 +165,14 @@ def output_formatter(state: DPRState) -> DPRState:
     
     # Build output
     output = {
-        "status": "Stage 6 Complete",
+        "status": "Stage 7 Complete",
         "orchestrator": "✅ Functional",
         "data_collection": "✅ Integrated",
         "financial_modeling": "✅ Integrated",
-        "document_generation": "✅ Integrated (13 sections)",
+        "document_generation": "✅ Integrated (18 sections)",
         "project_data_collected": len(project_data),
         "validation": "✅ Passed" if validation.get("valid") else "⚠️ Has Issues",
-        "next_step": "Stage 7 - Add 5 more sections (18/21 total)"
+        "next_step": "Stage 8 - Add final 3 sections (21/21 total = 100%!)"
     }
     
     # Add project summary if data is valid
@@ -202,12 +204,14 @@ def output_formatter(state: DPRState) -> DPRState:
                                 "project_introduction", "cluster_profile", "technical_feasibility",
                                 "market_analysis", "implementation_schedule",
                                 "management_structure", "economic_viability", "swot_analysis",
-                                "risk_analysis", "environmental_impact"] 
+                                "risk_analysis", "environmental_impact",
+                                "quality_assurance", "supply_chain", "infrastructure",
+                                "legal_compliance", "human_resource"] 
                    if k in dpr_sections]
     
     output["document_summary"] = {
         "sections_generated": len(doc_sections),
-        "total_sections_this_stage": 13,
+        "total_sections_this_stage": 18,
         "total_mse_cdp_sections": 21,
         "progress_percentage": round((len(doc_sections) / 21) * 100, 1),
         "sections": doc_sections,
@@ -235,10 +239,10 @@ def output_formatter(state: DPRState) -> DPRState:
 def build_orchestrator_agent():
     """
     Build the orchestrator graph with all agents
-    Stage 6: Continued document expansion (13 sections)
+    Stage 7: Near completion (18 sections)
     """
     print("\n" + "="*80)
-    print("🏗️  BUILDING DPR ORCHESTRATOR GRAPH - STAGE 6")
+    print("🏗️  BUILDING DPR ORCHESTRATOR GRAPH - STAGE 7")
     print("="*80)
     
     # Create state graph
@@ -269,7 +273,7 @@ def build_orchestrator_agent():
     # Save visualization
     save_graph_as_png(graph, __file__)
     
-    print("\n✅ Orchestrator graph built successfully! (Stage 6)")
+    print("\n✅ Orchestrator graph built successfully! (Stage 7)")
     print("="*80 + "\n")
     
     return graph
