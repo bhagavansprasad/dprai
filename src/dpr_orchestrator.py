@@ -1,7 +1,7 @@
 # dpr_orchestrator.py
 """
-DPR Orchestrator Agent - Stage 1: Foundation
-Simple graph structure with dummy functions
+DPR Orchestrator Agent - Stage 2: Data Collection Integration
+Orchestrator with modular agent integration
 """
 from typing import TypedDict, Annotated
 from termcolor import cprint
@@ -13,6 +13,9 @@ from langgraph.graph.message import add_messages
 
 from lg_utility import save_graph_as_png
 from config import LLM_MODEL
+
+# Import agents
+from data_collection_agent import data_collection_agent
 
 
 # ============================================================================
@@ -28,6 +31,9 @@ class DPRState(TypedDict):
     
     # Project data collected from user
     project_data: dict
+    
+    # Validation results
+    validation: dict
     
     # Generated DPR sections
     dpr_sections: dict
@@ -58,6 +64,9 @@ def orchestrator_init(state: DPRState) -> DPRState:
     if "dpr_sections" not in state:
         state["dpr_sections"] = {}
     
+    if "validation" not in state:
+        state["validation"] = {}
+    
     state["current_stage"] = "initialized"
     
     print(f"Status: ✅ Initialized")
@@ -66,20 +75,31 @@ def orchestrator_init(state: DPRState) -> DPRState:
 
 def coordinator_agent(state: DPRState) -> DPRState:
     """
-    Node 2: Main coordinator agent (dummy for now)
+    Node 3: Main coordinator agent
+    Now uses collected project data to coordinate workflow
     """
     print()
     cprint(f"{'NODE: coordinator_agent':-^80}", 'green')
     
     messages = state.get("messages", [])
+    project_data = state.get("project_data", {})
+    validation = state.get("validation", {})
     
-    # Dummy response
-    response_text = "Stage 1: Orchestrator initialized successfully. Ready to coordinate agents."
+    # Check if we have valid project data
+    if validation.get("valid"):
+        response_text = f"✅ Project data validated. Coordinating agents for {project_data.get('cluster_type', 'Unknown')} cluster."
+        print(f"📊 Cluster: {project_data.get('cluster_type', 'N/A')}")
+        print(f"📍 Location: {project_data.get('location', 'N/A')}")
+        print(f"👥 Members: {project_data.get('members', 'N/A')}")
+    else:
+        response_text = "⚠️ Project data incomplete. May need additional information."
+        print(f"⚠️  Missing fields: {validation.get('missing_fields', [])}")
+    
     response = AIMessage(content=response_text)
     
-    print(f"Response: {response_text}")
+    print(f"\nResponse: {response_text}")
     
-    state["messages"] = [response]
+    state["messages"].append(response)
     state["current_stage"] = "coordinated"
     
     print(f"Status: ✅ Coordination complete")
@@ -88,7 +108,7 @@ def coordinator_agent(state: DPRState) -> DPRState:
 
 def workflow_planner(state: DPRState) -> DPRState:
     """
-    Node 3: Plan the workflow (dummy for now)
+    Node 4: Plan the workflow (dummy for now)
     """
     print()
     cprint(f"{'NODE: workflow_planner':-^80}", 'yellow')
@@ -109,18 +129,33 @@ def workflow_planner(state: DPRState) -> DPRState:
 
 def output_formatter(state: DPRState) -> DPRState:
     """
-    Node 4: Format final output (dummy for now)
+    Node 5: Format final output
+    Now includes collected project data
     """
     print()
     cprint(f"{'NODE: output_formatter':-^80}", 'magenta')
     
-    # Dummy output
+    project_data = state.get("project_data", {})
+    validation = state.get("validation", {})
+    
+    # Build output
     output = {
-        "status": "Stage 1 Complete",
+        "status": "Stage 2 Complete",
         "orchestrator": "✅ Functional",
-        "graph_structure": "✅ Built",
-        "next_step": "Stage 2 - Add Data Collection Agent"
+        "data_collection": "✅ Integrated",
+        "project_data_collected": len(project_data),
+        "validation": "✅ Passed" if validation.get("valid") else "⚠️ Has Issues",
+        "next_step": "Stage 3 - Add Financial Modeling Agent"
     }
+    
+    # Add project summary if data is valid
+    if validation.get("valid"):
+        output["project_summary"] = {
+            "cluster": project_data.get("cluster_type"),
+            "location": project_data.get("location"),
+            "members": project_data.get("members"),
+            "cost": project_data.get("project_cost")
+        }
     
     import json
     output_str = json.dumps(output, indent=2)
@@ -141,10 +176,11 @@ def output_formatter(state: DPRState) -> DPRState:
 
 def build_orchestrator_agent():
     """
-    Build the orchestrator graph with simple linear flow
+    Build the orchestrator graph with data collection agent
+    Stage 2: Integrated data collection
     """
     print("\n" + "="*80)
-    print("🏗️  BUILDING DPR ORCHESTRATOR GRAPH")
+    print("🏗️  BUILDING DPR ORCHESTRATOR GRAPH - STAGE 2")
     print("="*80)
     
     # Create state graph
@@ -152,13 +188,15 @@ def build_orchestrator_agent():
     
     # Add nodes
     builder.add_node("ORCHESTRATOR_INIT", orchestrator_init)
+    builder.add_node("DATA_COLLECTION_AGENT", data_collection_agent)  # NEW!
     builder.add_node("COORDINATOR_AGENT", coordinator_agent)
     builder.add_node("WORKFLOW_PLANNER", workflow_planner)
     builder.add_node("OUTPUT_FORMATTER", output_formatter)
     
-    # Add edges (simple linear flow for Stage 1)
+    # Add edges - Updated flow with data collection
     builder.add_edge(START, "ORCHESTRATOR_INIT")
-    builder.add_edge("ORCHESTRATOR_INIT", "COORDINATOR_AGENT")
+    builder.add_edge("ORCHESTRATOR_INIT", "DATA_COLLECTION_AGENT")  # NEW!
+    builder.add_edge("DATA_COLLECTION_AGENT", "COORDINATOR_AGENT")  # NEW!
     builder.add_edge("COORDINATOR_AGENT", "WORKFLOW_PLANNER")
     builder.add_edge("WORKFLOW_PLANNER", "OUTPUT_FORMATTER")
     builder.add_edge("OUTPUT_FORMATTER", END)
@@ -169,7 +207,7 @@ def build_orchestrator_agent():
     # Save visualization
     save_graph_as_png(graph, __file__)
     
-    print("\n✅ Orchestrator graph built successfully!")
+    print("\n✅ Orchestrator graph built successfully! (Stage 2)")
     print("="*80 + "\n")
     
     return graph
