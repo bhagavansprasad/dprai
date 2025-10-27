@@ -143,31 +143,50 @@ class DPRState(TypedDict):
 - Graph: START → INIT → DATA_COLLECTION → FINANCIAL_MODELING → DOCUMENT_GENERATOR → COORDINATOR → PLANNER → FORMATTER → END
 - Status: ✅ Tested and working
 
+**Stage 5: Expanded Document Generation** ✅
+- Branch: `feature/stage-5-expand-sections`
+- Files modified:
+  * document_generator.py (UPDATED - expanded to 8 sections)
+  * dpr_orchestrator.py (UPDATED - updated section counts)
+- Features:
+  * Added 5 new DPR sections (total: 8 sections)
+  * Section 4: Project Introduction & Background
+  * Section 5: Cluster Profile Analysis
+  * Section 6: Technical Feasibility Study
+  * Section 7: Market Analysis & Demand Assessment
+  * Section 8: Implementation Schedule & Timeline
+  * Same Template + LLM approach
+  * Progress tracking: 8/21 sections (38%)
+  * All sections use real project data
+- Graph: UNCHANGED (same as Stage 4)
+- Status: ✅ Tested and working
+
 ### PLANNED STAGES:
 
-**Stage 5: Expand Document Sections** (NEXT - Option A)
-- Branch: `feature/stage-5-more-sections`
-- Add more DPR sections:
-  * Technical Feasibility
-  * Market Analysis
-  * Implementation Timeline
-  * Risk Analysis
-  * Environmental Impact
-  * Remaining 16 MSE-CDP sections
+**Stage 6: Continue Expanding Sections** (NEXT)
+- Branch: `feature/stage-6-more-sections`
+- Add 5 more DPR sections (total: 13/21 = 62%)
+- Sections to add:
+  * Management & Organizational Structure
+  * Economic & Commercial Viability
+  * SWOT Analysis
+  * Risk Analysis & Mitigation
+  * Environmental & Social Impact Assessment
 
-**Stage 5: Export Features** (NEXT - Option B)
-- Branch: `feature/stage-5-export`
-- Add file export functionality:
-  * Save Markdown sections to files
-  * Convert to PDF
-  * Convert to DOCX
-  * Add download functionality
+**Stage 7: Continue Expanding Sections**
+- Branch: `feature/stage-7-more-sections`
+- Add 5 more sections (total: 18/21 = 86%)
 
-**Stage 6+: Additional Agents**
-- Technical Feasibility Agent
-- Compliance Validation Agent
-- Market Analysis Agent
-- Risk Analysis Agent
+**Stage 8: Final Sections**
+- Branch: `feature/stage-8-final-sections`
+- Add final 3 sections (total: 21/21 = 100%)
+- Complete all MSE-CDP required sections
+
+**Stage 9+: Additional Features**
+- Export functionality (PDF, DOCX)
+- Enhanced calculations (real NPV/IRR)
+- Additional validation
+- More agents
 - etc.
 
 ================================================================================
@@ -260,7 +279,7 @@ def {vendor}_build_order_agent():
 - Include: compliance documents checklist
 
 ================================================================================
-## SECTION 6: CURRENT STATE (END OF STAGE 4)
+## SECTION 6: CURRENT STATE (END OF STAGE 5)
 ================================================================================
 
 ### Working Files:
@@ -269,7 +288,7 @@ def {vendor}_build_order_agent():
 3. dpr_orchestrator.py - Main orchestrator with 7 nodes
 4. data_collection_agent.py - Data extraction and validation
 5. financial_agent.py - Financial modeling and calculations
-6. document_generator.py - DPR section generation in Markdown
+6. document_generator.py - DPR section generation in Markdown (8 sections)
 7. dpr_main.py - Test entry point
 
 ### Current Graph Flow:
@@ -282,7 +301,7 @@ DATA_COLLECTION_AGENT (extract & validate project data)
   ↓
 FINANCIAL_MODELING_AGENT (calculate financial metrics & projections)
   ↓
-DOCUMENT_GENERATOR_AGENT (generate 3 DPR sections in Markdown)
+DOCUMENT_GENERATOR_AGENT (generate 8 DPR sections in Markdown)
   ↓
 COORDINATOR_AGENT (use collected data + financial status + document status)
   ↓
@@ -293,7 +312,7 @@ OUTPUT_FORMATTER (format final output with project + financial + document summar
 END
 ```
 
-### Test Results (Stage 4):
+### Test Results (Stage 5):
 ✅ All nodes execute successfully
 ✅ Data extracted: cluster_type, location, members, project_cost, facility_type, 
    grant_scheme, subsidy_range
@@ -306,14 +325,20 @@ END
    - Payback: 8.3 years (PYTHON formula with simulated inputs)
 ✅ MSE-CDP Compliance: NON_COMPLIANT (example shown)
 ✅ 10-year projections: SIMPLIFIED (to be enhanced)
-✅ Documents generated: 3/3 sections
-   - Executive Summary (Markdown)
-   - Organization Details (Markdown)
-   - Financial Plan (Markdown, includes real financial metrics)
-✅ Template + LLM approach: Working perfectly
+✅ Documents generated: 8/8 sections (Stage 5)
+   - Section 1: Executive Summary (Markdown)
+   - Section 2: Organization Details (Markdown)
+   - Section 3: Financial Plan (Markdown, includes real financial metrics)
+   - Section 4: Project Introduction & Background (Markdown) - NEW in Stage 5
+   - Section 5: Cluster Profile Analysis (Markdown) - NEW in Stage 5
+   - Section 6: Technical Feasibility Study (Markdown) - NEW in Stage 5
+   - Section 7: Market Analysis & Demand Assessment (Markdown) - NEW in Stage 5
+   - Section 8: Implementation Schedule & Timeline (Markdown) - NEW in Stage 5
+✅ Template + LLM approach: Working perfectly, scales well
+✅ Progress tracking: 8/21 sections (38.1% complete)
 ✅ Gemini API rate limiting: Auto-retry handles it successfully
 ✅ Complete DPR pipeline: Functional end-to-end
-✅ Ready for Stage 5
+✅ Ready for Stage 6 (5 more sections)
 
 ### Sample Test Input:
 ```python
@@ -329,14 +354,14 @@ Please help me generate a complete DPR with all 21 sections.
 """
 ```
 
-### Sample Output (Stage 4):
+### Sample Output (Stage 5):
 ```json
 {
-  "status": "Stage 4 Complete",
+  "status": "Stage 5 Complete",
   "orchestrator": "✅ Functional",
   "data_collection": "✅ Integrated",
   "financial_modeling": "✅ Integrated",
-  "document_generation": "✅ Integrated",
+  "document_generation": "✅ Integrated (8 sections)",
   "project_data_collected": 8,
   "validation": "✅ Passed",
   "project_summary": {
@@ -354,44 +379,55 @@ Please help me generate a complete DPR with all 21 sections.
     "note": "⚠️ Using simulated calculations"
   },
   "document_summary": {
-    "sections_generated": 3,
-    "total_sections": 3,
+    "sections_generated": 8,
+    "total_sections_this_stage": 8,
+    "total_mse_cdp_sections": 21,
+    "progress_percentage": 38.1,
     "sections": [
       "executive_summary",
       "organization_details",
-      "financial_plan"
+      "financial_plan",
+      "project_introduction",
+      "cluster_profile",
+      "technical_feasibility",
+      "market_analysis",
+      "implementation_schedule"
     ],
     "format": "Markdown",
     "method": "Template + LLM"
   },
-  "next_step": "Stage 5 - Expand document sections or add more agents"
+  "next_step": "Stage 6 - Add 5 more sections (13/21 total)"
 }
 ```
 
 ================================================================================
-## SECTION 7: NEXT STEPS (STAGE 5)
+## SECTION 7: NEXT STEPS (STAGE 6)
 ================================================================================
 
-### Stage 5 Options:
+### Stage 6 Plan: Add 5 More Sections (Total: 13/21 = 62%)
 
-**Option A: Expand Document Sections**
-- Add more DPR sections (18 remaining of 21 total MSE-CDP sections)
-- Sections to add: Technical Feasibility, Market Analysis, Implementation Timeline, etc.
-- Continue using Template + LLM approach
-- Store in state["dpr_sections"]
+**What to build:**
+- Continue expanding document_generator.py
+- Add 5 more DPR sections using Template + LLM approach
 
-**Option B: Export Features**
-- Add file export functionality
-- Save Markdown sections to files
-- Convert to PDF/DOCX
-- Add download/sharing capabilities
+**Sections to add:**
+9. Management & Organizational Structure
+10. Economic & Commercial Viability
+11. SWOT Analysis
+12. Risk Analysis & Mitigation
+13. Environmental & Social Impact Assessment
 
-**Option C: Enhance Existing Features**
-- Replace dummy NPV/IRR with real calculations
-- Improve financial projections
-- Add more validation and error handling
+**Integration:**
+- Update document_generator.py (add 5 new generator functions)
+- Update dpr_orchestrator.py (update section counts)
+- Same approach as Stage 5
+- Progress will be: 13/21 (62%)
 
-**Awaiting user decision on Stage 5 direction.**
+**After Stage 6:**
+- Stage 7: Add 5 more sections (18/21 = 86%)
+- Stage 8: Add final 3 sections (21/21 = 100%)
+
+**Awaiting user permission to proceed with Stage 6.**
 
 ================================================================================
 ## SECTION 8: HOW TO USE THIS CONTEXT DOCUMENT
@@ -482,16 +518,20 @@ git checkout -b feature/stage-{N}-{description}
 - ✅ Stage 1: Foundation & Basic Orchestrator
 - ✅ Stage 2: Data Collection Agent
 - ✅ Stage 3: Financial Modeling Agent
-- ✅ Stage 4: Document Generation Agent
+- ✅ Stage 4: Document Generation Agent (3 sections)
+- ✅ Stage 5: Expanded Document Generation (8 sections total)
 
-**Current Stage:** Ready for Stage 5: Expand Sections or Add Export Features
+**Current Stage:** Ready for Stage 6: Add 5 More Sections (13/21 total)
+
+**Progress:** 8/21 DPR sections complete (38.1%)
 
 **Git Branches:**
 - feature/stage-1-orchestrator-foundation (merged)
 - feature/stage-2-data-collection-agent (merged)
 - feature/stage-3-financial-agent (merged)
-- feature/stage-4-document-generator (ready to merge)
-- feature/stage-5-* (to be created based on user choice)
+- feature/stage-4-document-generator (merged)
+- feature/stage-5-expand-sections (ready to merge)
+- feature/stage-6-more-sections (to be created)
 
 ================================================================================
 END OF CONTEXT DOCUMENT
@@ -500,5 +540,5 @@ END OF CONTEXT DOCUMENT
 This document contains ALL instructions, decisions, code patterns, and context
 needed to continue the DPR Automation Platform project in a new chat session.
 
-Last updated: After successful Stage 4 testing
-Version: 1.4
+Last updated: After successful Stage 5 testing
+Version: 1.5
