@@ -1,6 +1,6 @@
 # dpr_orchestrator.py
 """
-DPR Orchestrator Agent - Stage 2: Data Collection Integration
+DPR Orchestrator Agent - Stage 3: Financial Modeling Integration
 Orchestrator with modular agent integration
 """
 from typing import TypedDict, Annotated
@@ -16,6 +16,7 @@ from config import LLM_MODEL
 
 # Import agents
 from data_collection_agent import data_collection_agent
+from financial_agent import financial_modeling_agent
 
 
 # ============================================================================
@@ -75,8 +76,8 @@ def orchestrator_init(state: DPRState) -> DPRState:
 
 def coordinator_agent(state: DPRState) -> DPRState:
     """
-    Node 3: Main coordinator agent
-    Now uses collected project data to coordinate workflow
+    Node 4: Main coordinator agent
+    Uses collected project data and financial metrics to coordinate workflow
     """
     print()
     cprint(f"{'NODE: coordinator_agent':-^80}", 'green')
@@ -84,13 +85,22 @@ def coordinator_agent(state: DPRState) -> DPRState:
     messages = state.get("messages", [])
     project_data = state.get("project_data", {})
     validation = state.get("validation", {})
+    dpr_sections = state.get("dpr_sections", {})
     
     # Check if we have valid project data
     if validation.get("valid"):
-        response_text = f"✅ Project data validated. Coordinating agents for {project_data.get('cluster_type', 'Unknown')} cluster."
+        cluster = project_data.get('cluster_type', 'Unknown')
+        response_text = f"✅ Project data validated. Coordinating agents for {cluster} cluster."
         print(f"📊 Cluster: {project_data.get('cluster_type', 'N/A')}")
         print(f"📍 Location: {project_data.get('location', 'N/A')}")
         print(f"👥 Members: {project_data.get('members', 'N/A')}")
+        
+        # Check if financial modeling is done
+        if "financial" in dpr_sections:
+            financial = dpr_sections["financial"]
+            compliance = financial.get("mse_cdp_compliance", {}).get("status", "UNKNOWN")
+            print(f"💰 Financial Status: {compliance}")
+            response_text += f" Financial modeling complete: {compliance}."
     else:
         response_text = "⚠️ Project data incomplete. May need additional information."
         print(f"⚠️  Missing fields: {validation.get('missing_fields', [])}")
@@ -108,7 +118,7 @@ def coordinator_agent(state: DPRState) -> DPRState:
 
 def workflow_planner(state: DPRState) -> DPRState:
     """
-    Node 4: Plan the workflow (dummy for now)
+    Node 5: Plan the workflow (dummy for now)
     """
     print()
     cprint(f"{'NODE: workflow_planner':-^80}", 'yellow')
@@ -129,23 +139,25 @@ def workflow_planner(state: DPRState) -> DPRState:
 
 def output_formatter(state: DPRState) -> DPRState:
     """
-    Node 5: Format final output
-    Now includes collected project data
+    Node 6: Format final output
+    Includes collected project data and financial metrics
     """
     print()
     cprint(f"{'NODE: output_formatter':-^80}", 'magenta')
     
     project_data = state.get("project_data", {})
     validation = state.get("validation", {})
+    dpr_sections = state.get("dpr_sections", {})
     
     # Build output
     output = {
-        "status": "Stage 2 Complete",
+        "status": "Stage 3 Complete",
         "orchestrator": "✅ Functional",
         "data_collection": "✅ Integrated",
+        "financial_modeling": "✅ Integrated",
         "project_data_collected": len(project_data),
         "validation": "✅ Passed" if validation.get("valid") else "⚠️ Has Issues",
-        "next_step": "Stage 3 - Add Financial Modeling Agent"
+        "next_step": "Stage 4 - Add Document Generation Agent"
     }
     
     # Add project summary if data is valid
@@ -155,6 +167,21 @@ def output_formatter(state: DPRState) -> DPRState:
             "location": project_data.get("location"),
             "members": project_data.get("members"),
             "cost": project_data.get("project_cost")
+        }
+    
+    # Add financial summary if available
+    if "financial" in dpr_sections:
+        financial = dpr_sections["financial"]
+        metrics = financial.get("metrics", {})
+        compliance = financial.get("mse_cdp_compliance", {})
+        
+        output["financial_summary"] = {
+            "npv": metrics.get("npv"),
+            "irr": metrics.get("irr"),
+            "dscr": metrics.get("dscr"),
+            "breakeven": metrics.get("breakeven_percentage"),
+            "compliance": compliance.get("status"),
+            "note": "⚠️ Using simulated calculations"
         }
     
     import json
@@ -176,11 +203,11 @@ def output_formatter(state: DPRState) -> DPRState:
 
 def build_orchestrator_agent():
     """
-    Build the orchestrator graph with data collection agent
-    Stage 2: Integrated data collection
+    Build the orchestrator graph with data collection and financial modeling agents
+    Stage 3: Integrated financial modeling
     """
     print("\n" + "="*80)
-    print("🏗️  BUILDING DPR ORCHESTRATOR GRAPH - STAGE 2")
+    print("🏗️  BUILDING DPR ORCHESTRATOR GRAPH - STAGE 3")
     print("="*80)
     
     # Create state graph
@@ -188,15 +215,17 @@ def build_orchestrator_agent():
     
     # Add nodes
     builder.add_node("ORCHESTRATOR_INIT", orchestrator_init)
-    builder.add_node("DATA_COLLECTION_AGENT", data_collection_agent)  # NEW!
+    builder.add_node("DATA_COLLECTION_AGENT", data_collection_agent)
+    builder.add_node("FINANCIAL_MODELING_AGENT", financial_modeling_agent)  # NEW!
     builder.add_node("COORDINATOR_AGENT", coordinator_agent)
     builder.add_node("WORKFLOW_PLANNER", workflow_planner)
     builder.add_node("OUTPUT_FORMATTER", output_formatter)
     
-    # Add edges - Updated flow with data collection
+    # Add edges - Updated flow with financial modeling
     builder.add_edge(START, "ORCHESTRATOR_INIT")
-    builder.add_edge("ORCHESTRATOR_INIT", "DATA_COLLECTION_AGENT")  # NEW!
-    builder.add_edge("DATA_COLLECTION_AGENT", "COORDINATOR_AGENT")  # NEW!
+    builder.add_edge("ORCHESTRATOR_INIT", "DATA_COLLECTION_AGENT")
+    builder.add_edge("DATA_COLLECTION_AGENT", "FINANCIAL_MODELING_AGENT")  # NEW!
+    builder.add_edge("FINANCIAL_MODELING_AGENT", "COORDINATOR_AGENT")  # NEW!
     builder.add_edge("COORDINATOR_AGENT", "WORKFLOW_PLANNER")
     builder.add_edge("WORKFLOW_PLANNER", "OUTPUT_FORMATTER")
     builder.add_edge("OUTPUT_FORMATTER", END)
@@ -207,7 +236,7 @@ def build_orchestrator_agent():
     # Save visualization
     save_graph_as_png(graph, __file__)
     
-    print("\n✅ Orchestrator graph built successfully! (Stage 2)")
+    print("\n✅ Orchestrator graph built successfully! (Stage 3)")
     print("="*80 + "\n")
     
     return graph
