@@ -1,6 +1,6 @@
 # dpr_orchestrator.py
 """
-DPR Orchestrator Agent - Stage 3: Financial Modeling Integration
+DPR Orchestrator Agent - Stage 4: Document Generation Integration
 Orchestrator with modular agent integration
 """
 from typing import TypedDict, Annotated
@@ -17,6 +17,7 @@ from config import LLM_MODEL
 # Import agents
 from data_collection_agent import data_collection_agent
 from financial_agent import financial_modeling_agent
+from document_generator import document_generator_agent
 
 
 # ============================================================================
@@ -76,8 +77,8 @@ def orchestrator_init(state: DPRState) -> DPRState:
 
 def coordinator_agent(state: DPRState) -> DPRState:
     """
-    Node 4: Main coordinator agent
-    Uses collected project data and financial metrics to coordinate workflow
+    Node 5: Main coordinator agent
+    Uses collected project data, financial metrics, and generated documents
     """
     print()
     cprint(f"{'NODE: coordinator_agent':-^80}", 'green')
@@ -101,6 +102,13 @@ def coordinator_agent(state: DPRState) -> DPRState:
             compliance = financial.get("mse_cdp_compliance", {}).get("status", "UNKNOWN")
             print(f"💰 Financial Status: {compliance}")
             response_text += f" Financial modeling complete: {compliance}."
+        
+        # Check if documents are generated
+        doc_sections = [k for k in ["executive_summary", "organization_details", "financial_plan"] 
+                       if k in dpr_sections]
+        if doc_sections:
+            print(f"📄 Documents Generated: {len(doc_sections)}/3 sections")
+            response_text += f" Generated {len(doc_sections)} DPR sections."
     else:
         response_text = "⚠️ Project data incomplete. May need additional information."
         print(f"⚠️  Missing fields: {validation.get('missing_fields', [])}")
@@ -118,7 +126,7 @@ def coordinator_agent(state: DPRState) -> DPRState:
 
 def workflow_planner(state: DPRState) -> DPRState:
     """
-    Node 5: Plan the workflow (dummy for now)
+    Node 6: Plan the workflow (dummy for now)
     """
     print()
     cprint(f"{'NODE: workflow_planner':-^80}", 'yellow')
@@ -139,8 +147,8 @@ def workflow_planner(state: DPRState) -> DPRState:
 
 def output_formatter(state: DPRState) -> DPRState:
     """
-    Node 6: Format final output
-    Includes collected project data and financial metrics
+    Node 7: Format final output
+    Includes collected project data, financial metrics, and generated documents
     """
     print()
     cprint(f"{'NODE: output_formatter':-^80}", 'magenta')
@@ -151,13 +159,14 @@ def output_formatter(state: DPRState) -> DPRState:
     
     # Build output
     output = {
-        "status": "Stage 3 Complete",
+        "status": "Stage 4 Complete",
         "orchestrator": "✅ Functional",
         "data_collection": "✅ Integrated",
         "financial_modeling": "✅ Integrated",
+        "document_generation": "✅ Integrated",
         "project_data_collected": len(project_data),
         "validation": "✅ Passed" if validation.get("valid") else "⚠️ Has Issues",
-        "next_step": "Stage 4 - Add Document Generation Agent"
+        "next_step": "Stage 5 - Expand document sections or add more agents"
     }
     
     # Add project summary if data is valid
@@ -184,6 +193,18 @@ def output_formatter(state: DPRState) -> DPRState:
             "note": "⚠️ Using simulated calculations"
         }
     
+    # Add document generation summary
+    doc_sections = [k for k in ["executive_summary", "organization_details", "financial_plan"] 
+                   if k in dpr_sections]
+    
+    output["document_summary"] = {
+        "sections_generated": len(doc_sections),
+        "total_sections": 3,
+        "sections": doc_sections,
+        "format": "Markdown",
+        "method": "Template + LLM"
+    }
+    
     import json
     output_str = json.dumps(output, indent=2)
     
@@ -203,11 +224,11 @@ def output_formatter(state: DPRState) -> DPRState:
 
 def build_orchestrator_agent():
     """
-    Build the orchestrator graph with data collection and financial modeling agents
-    Stage 3: Integrated financial modeling
+    Build the orchestrator graph with all agents
+    Stage 4: Integrated document generation
     """
     print("\n" + "="*80)
-    print("🏗️  BUILDING DPR ORCHESTRATOR GRAPH - STAGE 3")
+    print("🏗️  BUILDING DPR ORCHESTRATOR GRAPH - STAGE 4")
     print("="*80)
     
     # Create state graph
@@ -216,16 +237,18 @@ def build_orchestrator_agent():
     # Add nodes
     builder.add_node("ORCHESTRATOR_INIT", orchestrator_init)
     builder.add_node("DATA_COLLECTION_AGENT", data_collection_agent)
-    builder.add_node("FINANCIAL_MODELING_AGENT", financial_modeling_agent)  # NEW!
+    builder.add_node("FINANCIAL_MODELING_AGENT", financial_modeling_agent)
+    builder.add_node("DOCUMENT_GENERATOR_AGENT", document_generator_agent)  # NEW!
     builder.add_node("COORDINATOR_AGENT", coordinator_agent)
     builder.add_node("WORKFLOW_PLANNER", workflow_planner)
     builder.add_node("OUTPUT_FORMATTER", output_formatter)
     
-    # Add edges - Updated flow with financial modeling
+    # Add edges - Updated flow with document generation
     builder.add_edge(START, "ORCHESTRATOR_INIT")
     builder.add_edge("ORCHESTRATOR_INIT", "DATA_COLLECTION_AGENT")
-    builder.add_edge("DATA_COLLECTION_AGENT", "FINANCIAL_MODELING_AGENT")  # NEW!
-    builder.add_edge("FINANCIAL_MODELING_AGENT", "COORDINATOR_AGENT")  # NEW!
+    builder.add_edge("DATA_COLLECTION_AGENT", "FINANCIAL_MODELING_AGENT")
+    builder.add_edge("FINANCIAL_MODELING_AGENT", "DOCUMENT_GENERATOR_AGENT")  # NEW!
+    builder.add_edge("DOCUMENT_GENERATOR_AGENT", "COORDINATOR_AGENT")  # NEW!
     builder.add_edge("COORDINATOR_AGENT", "WORKFLOW_PLANNER")
     builder.add_edge("WORKFLOW_PLANNER", "OUTPUT_FORMATTER")
     builder.add_edge("OUTPUT_FORMATTER", END)
@@ -236,7 +259,7 @@ def build_orchestrator_agent():
     # Save visualization
     save_graph_as_png(graph, __file__)
     
-    print("\n✅ Orchestrator graph built successfully! (Stage 3)")
+    print("\n✅ Orchestrator graph built successfully! (Stage 4)")
     print("="*80 + "\n")
     
     return graph
