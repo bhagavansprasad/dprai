@@ -1,20 +1,27 @@
 # document_generator.py
 """
-Document Generation Agent - Stage 5
+Document Generation Agent - Stage 6
 Generates DPR sections in Markdown format using real collected data
 
-Sections generated (Phase 2 - 8 sections total):
+Sections generated (Phase 3 - 13 sections total):
 Stage 4 (3 sections):
 1. Executive Summary
 2. Organization Details
 3. Financial Plan
 
-Stage 5 (5 NEW sections):
+Stage 5 (5 sections):
 4. Project Introduction & Background
 5. Cluster Profile Analysis
 6. Technical Feasibility Study
 7. Market Analysis & Demand Assessment
 8. Implementation Schedule & Timeline
+
+Stage 6 (5 NEW sections):
+9. Management & Organizational Structure
+10. Economic & Commercial Viability
+11. SWOT Analysis
+12. Risk Analysis & Mitigation
+13. Environmental & Social Impact Assessment
 
 Uses: Template structure + LLM content enhancement
 Format: Markdown
@@ -233,6 +240,130 @@ def get_implementation_schedule_template() -> str:
 
 ## Monitoring Checkpoints
 {monitoring_checkpoints}
+"""
+    return template
+
+
+# ============================================================================
+# STAGE 6: NEW SECTION TEMPLATES
+# ============================================================================
+
+def get_management_structure_template() -> str:
+    """
+    Template for Management & Organizational Structure section
+    """
+    template = """# MANAGEMENT & ORGANIZATIONAL STRUCTURE
+
+## Organizational Framework
+{organizational_framework}
+
+## Management Team
+{management_team}
+
+## Roles & Responsibilities
+{roles_responsibilities}
+
+## Governance Structure
+{governance_structure}
+
+## Decision-Making Process
+{decision_making}
+"""
+    return template
+
+
+def get_economic_viability_template() -> str:
+    """
+    Template for Economic & Commercial Viability section
+    """
+    template = """# ECONOMIC & COMMERCIAL VIABILITY
+
+## Economic Impact Analysis
+{economic_impact}
+
+## Commercial Feasibility
+{commercial_feasibility}
+
+## Cost-Benefit Analysis
+{cost_benefit}
+
+## Revenue Model
+{revenue_model}
+
+## Sustainability Assessment
+{sustainability_assessment}
+"""
+    return template
+
+
+def get_swot_analysis_template() -> str:
+    """
+    Template for SWOT Analysis section
+    """
+    template = """# SWOT ANALYSIS
+
+## Strengths
+{strengths}
+
+## Weaknesses
+{weaknesses}
+
+## Opportunities
+{opportunities}
+
+## Threats
+{threats}
+
+## Strategic Implications
+{strategic_implications}
+"""
+    return template
+
+
+def get_risk_analysis_template() -> str:
+    """
+    Template for Risk Analysis & Mitigation section
+    """
+    template = """# RISK ANALYSIS & MITIGATION
+
+## Risk Identification
+{risk_identification}
+
+## Risk Assessment
+{risk_assessment}
+
+## Mitigation Strategies
+{mitigation_strategies}
+
+## Contingency Plans
+{contingency_plans}
+
+## Risk Monitoring
+{risk_monitoring}
+"""
+    return template
+
+
+def get_environmental_impact_template() -> str:
+    """
+    Template for Environmental & Social Impact Assessment section
+    """
+    template = """# ENVIRONMENTAL & SOCIAL IMPACT ASSESSMENT
+
+## Environmental Impact
+{environmental_impact}
+
+## Social Impact
+{social_impact}
+
+## Sustainability Measures
+{sustainability_measures}
+
+## Compliance Requirements
+{compliance_requirements}
+
+## CSR Initiatives
+{csr_initiatives}
 """
     return template
 
@@ -664,24 +795,267 @@ Include a realistic 12-18 month implementation timeline. Write 5-6 detailed para
 
 
 # ============================================================================
+# STAGE 6: NEW CONTENT GENERATORS
+# ============================================================================
+
+def generate_management_structure(project_data: Dict, llm) -> str:
+    """
+    Generate Management & Organizational Structure using Template + LLM
+    """
+    print("  📝 Generating: Management & Organizational Structure")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    members = project_data.get("members", 0)
+    location = project_data.get("location", "N/A")
+    
+    system_prompt = """You are an organizational development consultant specializing in MSME clusters.
+Generate detailed content for the Management & Organizational Structure section.
+Include governance models, management hierarchy, and decision-making processes.
+Write professionally with focus on practical implementation."""
+
+    user_prompt = f"""Generate content for Management & Organizational Structure:
+
+PROJECT DATA:
+- Cluster Type: {cluster_type}
+- Number of Members: {members} units
+- Location: {location}
+
+Generate organizational structure covering:
+1. ORGANIZATIONAL FRAMEWORK - SPV/Trust structure, legal entity
+2. MANAGEMENT TEAM - Board composition, management positions, qualifications
+3. ROLES & RESPONSIBILITIES - Clear role definitions for each position
+4. GOVERNANCE STRUCTURE - Decision-making authority, reporting lines
+5. DECISION-MAKING PROCESS - Consensus mechanisms, voting procedures
+
+Write 5-6 detailed paragraphs with practical governance details."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Management & Organizational Structure generated")
+    
+    return f"# MANAGEMENT & ORGANIZATIONAL STRUCTURE\n\n{content}"
+
+
+def generate_economic_viability(project_data: Dict, financial_data: Dict, llm) -> str:
+    """
+    Generate Economic & Commercial Viability using Template + LLM
+    """
+    print("  📝 Generating: Economic & Commercial Viability")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    cost = project_data.get("project_cost", 0)
+    members = project_data.get("members", 0)
+    
+    # Get financial metrics
+    npv = financial_data.get("npv", 0)
+    irr = financial_data.get("irr", 0)
+    payback = financial_data.get("payback_period", 0)
+    
+    system_prompt = """You are a financial analyst specializing in MSME projects.
+Generate comprehensive content for the Economic & Commercial Viability section.
+Include economic impact, commercial feasibility, and sustainability analysis.
+Use data-driven language with financial insights."""
+
+    user_prompt = f"""Generate content for Economic & Commercial Viability:
+
+PROJECT DATA:
+- Industry: {cluster_type}
+- Investment: ₹{cost:,}
+- Member Units: {members}
+- NPV: ₹{npv:,.2f}
+- IRR: {irr}%
+- Payback Period: {payback} years
+
+Generate viability analysis covering:
+1. ECONOMIC IMPACT ANALYSIS - Job creation, GDP contribution, multiplier effects
+2. COMMERCIAL FEASIBILITY - Revenue potential, market demand validation
+3. COST-BENEFIT ANALYSIS - Using NPV, IRR, and other metrics provided
+4. REVENUE MODEL - Income streams, pricing strategy, sustainability
+5. SUSTAINABILITY ASSESSMENT - Long-term viability, scalability
+
+Write 5-6 paragraphs using the financial metrics provided."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Economic & Commercial Viability generated")
+    
+    return f"# ECONOMIC & COMMERCIAL VIABILITY\n\n{content}"
+
+
+def generate_swot_analysis(project_data: Dict, llm) -> str:
+    """
+    Generate SWOT Analysis using Template + LLM
+    """
+    print("  📝 Generating: SWOT Analysis")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    location = project_data.get("location", "N/A")
+    members = project_data.get("members", 0)
+    facility_type = project_data.get("facility_type", "N/A")
+    
+    system_prompt = """You are a strategic planning consultant specializing in MSME clusters.
+Generate comprehensive SWOT Analysis for the project.
+Be specific, realistic, and strategic in identifying factors.
+Write in clear, business-focused language."""
+
+    user_prompt = f"""Generate SWOT Analysis content:
+
+PROJECT DATA:
+- Cluster Type: {cluster_type}
+- Location: {location}
+- Members: {members} units
+- Facility: {facility_type}
+
+Generate detailed SWOT covering:
+1. STRENGTHS - Internal advantages (skilled workforce, established cluster, location, etc.)
+2. WEAKNESSES - Internal limitations (technology gaps, infrastructure, capital constraints)
+3. OPPORTUNITIES - External favorable factors (market growth, government schemes, exports)
+4. THREATS - External challenges (competition, policy changes, economic factors)
+5. STRATEGIC IMPLICATIONS - How to leverage S, overcome W, exploit O, mitigate T
+
+Write 5-6 detailed paragraphs with specific, actionable insights."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] SWOT Analysis generated")
+    
+    return f"# SWOT ANALYSIS\n\n{content}"
+
+
+def generate_risk_analysis(project_data: Dict, llm) -> str:
+    """
+    Generate Risk Analysis & Mitigation using Template + LLM
+    """
+    print("  📝 Generating: Risk Analysis & Mitigation")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    cost = project_data.get("project_cost", 0)
+    facility_type = project_data.get("facility_type", "N/A")
+    
+    system_prompt = """You are a risk management consultant specializing in manufacturing and MSME projects.
+Generate comprehensive Risk Analysis & Mitigation strategies.
+Identify specific risks and provide actionable mitigation plans.
+Write with practical risk management focus."""
+
+    user_prompt = f"""Generate content for Risk Analysis & Mitigation:
+
+PROJECT DATA:
+- Industry: {cluster_type}
+- Facility: {facility_type}
+- Investment: ₹{cost:,}
+
+Generate risk analysis covering:
+1. RISK IDENTIFICATION - Technical, financial, market, operational, regulatory risks
+2. RISK ASSESSMENT - Probability and impact assessment for each risk
+3. MITIGATION STRATEGIES - Specific actions to reduce/prevent each risk
+4. CONTINGENCY PLANS - Backup plans if risks materialize
+5. RISK MONITORING - How to track and review risks ongoing
+
+Write 5-6 detailed paragraphs with specific risks and mitigation strategies."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Risk Analysis & Mitigation generated")
+    
+    return f"# RISK ANALYSIS & MITIGATION\n\n{content}"
+
+
+def generate_environmental_impact(project_data: Dict, llm) -> str:
+    """
+    Generate Environmental & Social Impact Assessment using Template + LLM
+    """
+    print("  📝 Generating: Environmental & Social Impact Assessment")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    location = project_data.get("location", "N/A")
+    facility_type = project_data.get("facility_type", "N/A")
+    members = project_data.get("members", 0)
+    
+    system_prompt = """You are a sustainability consultant specializing in environmental and social impact.
+Generate comprehensive Environmental & Social Impact Assessment.
+Include compliance, sustainability measures, and CSR initiatives.
+Write with focus on responsible and sustainable operations."""
+
+    user_prompt = f"""Generate content for Environmental & Social Impact Assessment:
+
+PROJECT DATA:
+- Industry: {cluster_type}
+- Location: {location}
+- Facility: {facility_type}
+- Serving: {members} units
+
+Generate impact assessment covering:
+1. ENVIRONMENTAL IMPACT - Emissions, waste management, resource usage, carbon footprint
+2. SOCIAL IMPACT - Employment generation, skill development, community benefits
+3. SUSTAINABILITY MEASURES - Green technologies, renewable energy, waste recycling
+4. COMPLIANCE REQUIREMENTS - Environmental clearances, pollution norms, regulations
+5. CSR INITIATIVES - Community development, education, health programs
+
+Write 5-6 detailed paragraphs with specific environmental and social considerations."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Environmental & Social Impact Assessment generated")
+    
+    return f"# ENVIRONMENTAL & SOCIAL IMPACT ASSESSMENT\n\n{content}"
+
+
+# ============================================================================
 # MAIN AGENT FUNCTION
 # ============================================================================
 
 def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Document Generation Agent - Generates 8 DPR sections in Markdown format
+    Document Generation Agent - Generates 13 DPR sections in Markdown format
     
     Stage 4 (3 sections):
     1. Executive Summary
     2. Organization Details
     3. Financial Plan
     
-    Stage 5 (5 NEW sections):
+    Stage 5 (5 sections):
     4. Project Introduction & Background
     5. Cluster Profile Analysis
     6. Technical Feasibility Study
     7. Market Analysis & Demand Assessment
     8. Implementation Schedule & Timeline
+    
+    Stage 6 (5 NEW sections):
+    9. Management & Organizational Structure
+    10. Economic & Commercial Viability
+    11. SWOT Analysis
+    12. Risk Analysis & Mitigation
+    13. Environmental & Social Impact Assessment
     
     Uses: Real data from state, Template + LLM approach
     Format: Markdown
@@ -705,16 +1079,16 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     print(f"   Format: Markdown")
     print(f"   Method: Template + LLM")
     print(f"   Content: Real data")
-    print(f"   Stage: 5 (8 sections total)\n")
+    print(f"   Stage: 6 (13 sections total)\n")
     
     # Initialize LLM
     llm = ChatVertexAI(model_name=LLM_MODEL, temperature=0.3)
     
-    print("🔄 Generating 8 sections:")
+    print("🔄 Generating 13 sections:")
     print("="*50)
     
     # ========================================================================
-    # STAGE 4 SECTIONS (already implemented)
+    # STAGE 4 SECTIONS
     # ========================================================================
     
     # Generate Section 1: Executive Summary
@@ -751,7 +1125,7 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     print()
     
     # ========================================================================
-    # STAGE 5 SECTIONS (NEW - 5 sections)
+    # STAGE 5 SECTIONS
     # ========================================================================
     
     # Generate Section 4: Project Introduction & Background
@@ -807,6 +1181,65 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
         print(f"  ❌ Error generating Implementation Schedule: {e}")
         state["dpr_sections"]["implementation_schedule"] = "# IMPLEMENTATION SCHEDULE & TIMELINE\n\nError generating content."
     
+    print()
+    
+    # ========================================================================
+    # STAGE 6 SECTIONS (NEW - 5 sections)
+    # ========================================================================
+    
+    # Generate Section 9: Management & Organizational Structure
+    try:
+        management_structure = generate_management_structure(project_data, llm)
+        state["dpr_sections"]["management_structure"] = management_structure
+        print("  ✅ Management & Organizational Structure complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Management Structure: {e}")
+        state["dpr_sections"]["management_structure"] = "# MANAGEMENT & ORGANIZATIONAL STRUCTURE\n\nError generating content."
+    
+    print()
+    
+    # Generate Section 10: Economic & Commercial Viability
+    try:
+        economic_viability = generate_economic_viability(project_data, financial_data, llm)
+        state["dpr_sections"]["economic_viability"] = economic_viability
+        print("  ✅ Economic & Commercial Viability complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Economic Viability: {e}")
+        state["dpr_sections"]["economic_viability"] = "# ECONOMIC & COMMERCIAL VIABILITY\n\nError generating content."
+    
+    print()
+    
+    # Generate Section 11: SWOT Analysis
+    try:
+        swot_analysis = generate_swot_analysis(project_data, llm)
+        state["dpr_sections"]["swot_analysis"] = swot_analysis
+        print("  ✅ SWOT Analysis complete")
+    except Exception as e:
+        print(f"  ❌ Error generating SWOT Analysis: {e}")
+        state["dpr_sections"]["swot_analysis"] = "# SWOT ANALYSIS\n\nError generating content."
+    
+    print()
+    
+    # Generate Section 12: Risk Analysis & Mitigation
+    try:
+        risk_analysis = generate_risk_analysis(project_data, llm)
+        state["dpr_sections"]["risk_analysis"] = risk_analysis
+        print("  ✅ Risk Analysis & Mitigation complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Risk Analysis: {e}")
+        state["dpr_sections"]["risk_analysis"] = "# RISK ANALYSIS & MITIGATION\n\nError generating content."
+    
+    print()
+    
+    # Generate Section 13: Environmental & Social Impact Assessment
+    try:
+        environmental_impact = generate_environmental_impact(project_data, llm)
+        state["dpr_sections"]["environmental_impact"] = environmental_impact
+        print("  ✅ Environmental & Social Impact Assessment complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Environmental Impact: {e}")
+        state["dpr_sections"]["environmental_impact"] = "# ENVIRONMENTAL & SOCIAL IMPACT ASSESSMENT\n\nError generating content."
+    
     print("="*50)
     print()
     
@@ -814,13 +1247,15 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     section_keys = [
         "executive_summary", "organization_details", "financial_plan",
         "project_introduction", "cluster_profile", "technical_feasibility",
-        "market_analysis", "implementation_schedule"
+        "market_analysis", "implementation_schedule",
+        "management_structure", "economic_viability", "swot_analysis",
+        "risk_analysis", "environmental_impact"
     ]
     sections_generated = len([k for k in section_keys if k in state["dpr_sections"]])
     
     print(f"✅ Document generation complete")
-    print(f"   Sections generated: {sections_generated}/8 (Stage 5)")
-    print(f"   Progress: {sections_generated}/21 total MSE-CDP sections")
+    print(f"   Sections generated: {sections_generated}/13 (Stage 6)")
+    print(f"   Progress: {sections_generated}/21 total MSE-CDP sections ({round(sections_generated/21*100, 1)}%)")
     print(f"   Storage: state['dpr_sections'][section_name]")
     print(f"   Format: Markdown")
     print()
