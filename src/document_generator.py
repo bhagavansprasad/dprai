@@ -1,9 +1,11 @@
 # document_generator.py
 """
-Document Generation Agent - Stage 7
+Document Generation Agent - Stage 8 (FINAL!)
 Generates DPR sections in Markdown format using real collected data
 
-Sections generated (Phase 4 - 18 sections total):
+ALL 21 MSE-CDP SECTIONS COMPLETE!
+
+Sections generated (Complete - 21 sections total):
 Stage 4 (3 sections):
 1. Executive Summary
 2. Organization Details
@@ -23,16 +25,22 @@ Stage 6 (5 sections):
 12. Risk Analysis & Mitigation
 13. Environmental & Social Impact Assessment
 
-Stage 7 (5 NEW sections):
+Stage 7 (5 sections):
 14. Quality Assurance & Standards
 15. Raw Material & Supply Chain Management
 16. Infrastructure & Utilities Requirements
 17. Legal & Regulatory Compliance
 18. Human Resource & Manpower Plan
 
+Stage 8 (3 FINAL sections):
+19. Marketing & Sales Strategy
+20. Monitoring & Evaluation Framework
+21. Annexures & Supporting Documents
+
 Uses: Template structure + LLM content enhancement
 Format: Markdown
 Content: Real data from collected project_data and financial metrics
+Status: 100% COMPLETE! 🎉
 """
 import json
 from typing import Dict, Any
@@ -495,6 +503,82 @@ def get_human_resource_template() -> str:
 
 ## HR Policies
 {hr_policies}
+"""
+    return template
+
+
+# ============================================================================
+# STAGE 8: FINAL SECTION TEMPLATES (COMPLETION!)
+# ============================================================================
+
+def get_marketing_strategy_template() -> str:
+    """
+    Template for Marketing & Sales Strategy section
+    """
+    template = """# MARKETING & SALES STRATEGY
+
+## Market Positioning
+{market_positioning}
+
+## Marketing Mix (4Ps)
+{marketing_mix}
+
+## Sales Strategy
+{sales_strategy}
+
+## Distribution Channels
+{distribution_channels}
+
+## Promotional Activities
+{promotional_activities}
+"""
+    return template
+
+
+def get_monitoring_framework_template() -> str:
+    """
+    Template for Monitoring & Evaluation Framework section
+    """
+    template = """# MONITORING & EVALUATION FRAMEWORK
+
+## Performance Indicators
+{performance_indicators}
+
+## Monitoring Mechanism
+{monitoring_mechanism}
+
+## Evaluation Methodology
+{evaluation_methodology}
+
+## Reporting Structure
+{reporting_structure}
+
+## Corrective Actions
+{corrective_actions}
+"""
+    return template
+
+
+def get_annexures_template() -> str:
+    """
+    Template for Annexures & Supporting Documents section
+    """
+    template = """# ANNEXURES & SUPPORTING DOCUMENTS
+
+## Financial Documents
+{financial_documents}
+
+## Technical Documents
+{technical_documents}
+
+## Legal Documents
+{legal_documents}
+
+## Organizational Documents
+{organizational_documents}
+
+## Other Supporting Documents
+{other_documents}
 """
     return template
 
@@ -1388,12 +1472,150 @@ Write 5-6 detailed paragraphs with specific HR strategies and workforce plans.""
 
 
 # ============================================================================
+# STAGE 8: FINAL CONTENT GENERATORS (COMPLETION!)
+# ============================================================================
+
+def generate_marketing_strategy(project_data: Dict, llm) -> str:
+    """
+    Generate Marketing & Sales Strategy using Template + LLM
+    """
+    print("  📝 Generating: Marketing & Sales Strategy")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    location = project_data.get("location", "N/A")
+    members = project_data.get("members", 0)
+    facility_type = project_data.get("facility_type", "N/A")
+    
+    system_prompt = """You are a marketing consultant specializing in MSME and manufacturing sectors.
+Generate comprehensive content for the Marketing & Sales Strategy section.
+Include market positioning, marketing mix, sales approach, and promotional strategies.
+Write with practical marketing and business development focus."""
+
+    user_prompt = f"""Generate content for Marketing & Sales Strategy:
+
+PROJECT DATA:
+- Industry: {cluster_type}
+- Location: {location}
+- Members: {members} units
+- Facility: {facility_type}
+
+Generate marketing strategy covering:
+1. MARKET POSITIONING - Value proposition, competitive advantage, target segments
+2. MARKETING MIX (4Ps) - Product strategy, pricing, place/distribution, promotion
+3. SALES STRATEGY - Sales approach, customer acquisition, relationship management
+4. DISTRIBUTION CHANNELS - Direct sales, dealers, online, exports
+5. PROMOTIONAL ACTIVITIES - Advertising, trade fairs, digital marketing, branding
+
+Write 5-6 detailed paragraphs with specific marketing and sales strategies."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Marketing & Sales Strategy generated")
+    
+    return f"# MARKETING & SALES STRATEGY\n\n{content}"
+
+
+def generate_monitoring_framework(project_data: Dict, llm) -> str:
+    """
+    Generate Monitoring & Evaluation Framework using Template + LLM
+    """
+    print("  📝 Generating: Monitoring & Evaluation Framework")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    members = project_data.get("members", 0)
+    cost = project_data.get("project_cost", 0)
+    
+    system_prompt = """You are a project management consultant specializing in monitoring and evaluation.
+Generate comprehensive content for the Monitoring & Evaluation Framework section.
+Include KPIs, monitoring mechanisms, evaluation methodology, and corrective actions.
+Write with focus on measurable outcomes and continuous improvement."""
+
+    user_prompt = f"""Generate content for Monitoring & Evaluation Framework:
+
+PROJECT DATA:
+- Industry: {cluster_type}
+- Investment: ₹{cost:,}
+- Serving: {members} member units
+
+Generate monitoring framework covering:
+1. PERFORMANCE INDICATORS - KPIs for financial, operational, social impact metrics
+2. MONITORING MECHANISM - Regular reviews, data collection, tracking systems
+3. EVALUATION METHODOLOGY - Baseline, mid-term, end-term evaluations
+4. REPORTING STRUCTURE - Monthly/quarterly reports, stakeholder communication
+5. CORRECTIVE ACTIONS - Issue identification, intervention strategies, feedback loops
+
+Write 5-6 detailed paragraphs with specific monitoring and evaluation approaches."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Monitoring & Evaluation Framework generated")
+    
+    return f"# MONITORING & EVALUATION FRAMEWORK\n\n{content}"
+
+
+def generate_annexures(project_data: Dict, llm) -> str:
+    """
+    Generate Annexures & Supporting Documents using Template + LLM
+    """
+    print("  📝 Generating: Annexures & Supporting Documents")
+    print("     🔧 [DEBUG] Using Template + LLM approach")
+    
+    cluster_type = project_data.get("cluster_type", "N/A")
+    grant_scheme = project_data.get("grant_scheme", "N/A")
+    
+    system_prompt = """You are a documentation specialist for DPR preparation.
+Generate comprehensive content for the Annexures & Supporting Documents section.
+List all required supporting documents and their relevance.
+Write as a structured checklist of required documents."""
+
+    user_prompt = f"""Generate content for Annexures & Supporting Documents:
+
+PROJECT DATA:
+- Industry: {cluster_type}
+- Grant Scheme: {grant_scheme}
+
+Generate annexures list covering:
+1. FINANCIAL DOCUMENTS - Balance sheets, bank statements, cost estimates, quotes
+2. TECHNICAL DOCUMENTS - Technical specifications, drawings, equipment details
+3. LEGAL DOCUMENTS - Registration certificates, licenses, land documents, MoUs
+4. ORGANIZATIONAL DOCUMENTS - SPV/Trust deed, member list, board resolutions
+5. OTHER SUPPORTING DOCUMENTS - Market studies, feasibility reports, photos
+
+Write 5-6 detailed paragraphs listing specific documents required for DPR submission."""
+
+    sys_msg = SystemMessage(content=system_prompt)
+    user_msg = HumanMessage(content=user_prompt)
+    
+    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    response = llm.invoke([sys_msg, user_msg])
+    content = response.content
+    
+    print("     ✅ [DEBUG] Annexures & Supporting Documents generated")
+    
+    return f"# ANNEXURES & SUPPORTING DOCUMENTS\n\n{content}"
+
+
+# ============================================================================
 # MAIN AGENT FUNCTION
 # ============================================================================
 
 def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Document Generation Agent - Generates 18 DPR sections in Markdown format
+    Document Generation Agent - Generates ALL 21 DPR sections in Markdown format
+    
+    🎉 COMPLETE - ALL MSE-CDP SECTIONS! 🎉
     
     Stage 4 (3 sections):
     1. Executive Summary
@@ -1414,15 +1636,21 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     12. Risk Analysis & Mitigation
     13. Environmental & Social Impact Assessment
     
-    Stage 7 (5 NEW sections):
+    Stage 7 (5 sections):
     14. Quality Assurance & Standards
     15. Raw Material & Supply Chain Management
     16. Infrastructure & Utilities Requirements
     17. Legal & Regulatory Compliance
     18. Human Resource & Manpower Plan
     
+    Stage 8 (3 FINAL sections):
+    19. Marketing & Sales Strategy
+    20. Monitoring & Evaluation Framework
+    21. Annexures & Supporting Documents
+    
     Uses: Real data from state, Template + LLM approach
     Format: Markdown
+    Status: 100% COMPLETE!
     """
     print()
     cprint(f"{'NODE: document_generator_agent':-^80}", 'yellow', attrs=['bold'])
@@ -1443,12 +1671,12 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     print(f"   Format: Markdown")
     print(f"   Method: Template + LLM")
     print(f"   Content: Real data")
-    print(f"   Stage: 7 (18 sections total)\n")
+    print(f"   Stage: 8 (FINAL - 21 sections total!) 🎉\n")
     
     # Initialize LLM
     llm = ChatVertexAI(model_name=LLM_MODEL, temperature=0.3)
     
-    print("🔄 Generating 18 sections:")
+    print("🔄 Generating ALL 21 sections:")
     print("="*50)
     
     # ========================================================================
@@ -1607,7 +1835,7 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     print()
     
     # ========================================================================
-    # STAGE 7 SECTIONS (NEW - 5 sections)
+    # STAGE 7 SECTIONS
     # ========================================================================
     
     # Generate Section 14: Quality Assurance & Standards
@@ -1663,6 +1891,43 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
         print(f"  ❌ Error generating Human Resource: {e}")
         state["dpr_sections"]["human_resource"] = "# HUMAN RESOURCE & MANPOWER PLAN\n\nError generating content."
     
+    print()
+    
+    # ========================================================================
+    # STAGE 8 SECTIONS (FINAL - 3 sections!)
+    # ========================================================================
+    
+    # Generate Section 19: Marketing & Sales Strategy
+    try:
+        marketing_strategy = generate_marketing_strategy(project_data, llm)
+        state["dpr_sections"]["marketing_strategy"] = marketing_strategy
+        print("  ✅ Marketing & Sales Strategy complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Marketing Strategy: {e}")
+        state["dpr_sections"]["marketing_strategy"] = "# MARKETING & SALES STRATEGY\n\nError generating content."
+    
+    print()
+    
+    # Generate Section 20: Monitoring & Evaluation Framework
+    try:
+        monitoring_framework = generate_monitoring_framework(project_data, llm)
+        state["dpr_sections"]["monitoring_framework"] = monitoring_framework
+        print("  ✅ Monitoring & Evaluation Framework complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Monitoring Framework: {e}")
+        state["dpr_sections"]["monitoring_framework"] = "# MONITORING & EVALUATION FRAMEWORK\n\nError generating content."
+    
+    print()
+    
+    # Generate Section 21: Annexures & Supporting Documents
+    try:
+        annexures = generate_annexures(project_data, llm)
+        state["dpr_sections"]["annexures"] = annexures
+        print("  ✅ Annexures & Supporting Documents complete")
+    except Exception as e:
+        print(f"  ❌ Error generating Annexures: {e}")
+        state["dpr_sections"]["annexures"] = "# ANNEXURES & SUPPORTING DOCUMENTS\n\nError generating content."
+    
     print("="*50)
     print()
     
@@ -1674,13 +1939,15 @@ def document_generator_agent(state: Dict[str, Any]) -> Dict[str, Any]:
         "management_structure", "economic_viability", "swot_analysis",
         "risk_analysis", "environmental_impact",
         "quality_assurance", "supply_chain", "infrastructure",
-        "legal_compliance", "human_resource"
+        "legal_compliance", "human_resource",
+        "marketing_strategy", "monitoring_framework", "annexures"
     ]
     sections_generated = len([k for k in section_keys if k in state["dpr_sections"]])
     
-    print(f"✅ Document generation complete")
-    print(f"   Sections generated: {sections_generated}/18 (Stage 7)")
+    print(f"🎉 Document generation COMPLETE!")
+    print(f"   Sections generated: {sections_generated}/21 (Stage 8 - FINAL!)")
     print(f"   Progress: {sections_generated}/21 total MSE-CDP sections ({round(sections_generated/21*100, 1)}%)")
+    print(f"   Status: ALL MSE-CDP SECTIONS COMPLETE! 🎊")
     print(f"   Storage: state['dpr_sections'][section_name]")
     print(f"   Format: Markdown")
     print()
