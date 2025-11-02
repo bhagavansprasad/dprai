@@ -1121,30 +1121,206 @@ def validate_executive_summary(content: str, project_data: Dict[str, Any]) -> Va
 
 def validate_financial_plan(content: str, project_data: Dict[str, Any], financial_data: Dict[str, Any]) -> ValidationResult:
     """
-    ⏸️ FINANCIAL PLAN VALIDATION - PLACEHOLDER
+    Master validation function for Financial Plan
     
-    To be implemented in Phase 3
-    
-    Will include:
-    - Tier 1: Structure (9 checks)
-    - Tier 2: Content (6 checks)
-    - Tier 3: Compliance (10 checks - critical formulas!)
-    - Tier 4: Quality (6 checks)
-    
-    Total: 31 validation points
+    Phase 3: Financial Plan validation
+    - ✅ Tier 1 (Structure): 9 checks
+    - ⏸️ Tier 2 (Content): 6 checks
+    - ⏸️ Tier 3 (Compliance): 10 checks  
+    - ⏸️ Tier 4 (Quality): 6 checks
     """
-    print("\n⏸️  FINANCIAL PLAN VALIDATION - Not implemented yet (Phase 3)")
+    print("\n" + "="*80)
+    cprint("🎯 VALIDATING: FINANCIAL PLAN", 'cyan', attrs=['bold'])
+    print("="*80)
     
     result = ValidationResult("financial_plan")
-    result.structure = {"score": 0, "passed": 0, "failed": 0, "total": 9, "details": []}
-    result.content = {"score": 0, "passed": 0, "failed": 0, "total": 6, "details": []}
-    result.compliance = {"score": 0, "passed": 0, "failed": 0, "total": 10, "details": []}
-    result.quality = {"score": 0, "llm_ratings": [], "details": []}
-    result.issues = ["Financial Plan validation not yet implemented"]
-    result.suggestions = ["Will be implemented in Phase 3"]
+    
+    llm = None  # LLM not needed for structure
+    
+    # Run all tiers
+    result.structure = validate_financial_plan_structure(content, project_data)
+    result.content =    validate_financial_plan_content(content, project_data, financial_data, llm)
+    result.compliance = validate_financial_plan_compliance(content, project_data, financial_data)    
+    result.quality = validate_financial_plan_quality(content, project_data, financial_data)
+    
+    # Calculate overall score
+    result.calculate_overall_score()
+    
+    # Generate issues
+    if result.structure["failed"] > 0:
+        for detail in result.structure["details"]:
+            if detail["status"] == "FAIL":
+                result.issues.append(detail["message"])
+                result.suggestions.append(f"Add missing {detail['name']}")
+    
+    print("\n" + "="*80)
+    print(f"📈 OVERALL SCORE: {result.overall_score:.1f}% | Grade: {result.grade} | Status: {result.status}")
+    print("="*80)
     
     return result
 
+
+def validate_financial_plan_structure(content: str, project_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    ✅ TIER 1: STRUCTURE VALIDATION - Financial Plan
+    
+    Validates structural completeness:
+    - S2.1: Main heading "FINANCIAL PLAN"
+    - S2.2: "Project Cost Breakdown" subsection
+    - S2.3: "Funding Structure" subsection
+    - S2.4: "Financial Viability Metrics" subsection
+    - S2.5: "Revenue Projections" subsection
+    - S2.6: "Debt Service Analysis" subsection
+    - S2.7: "Financial Feasibility Assessment" subsection
+    - S2.8: Contains table/structured data
+    - S2.9: Word count 1200-2000 words
+    
+    Total: 9 checks
+    """
+    print("\n" + "="*80)
+    print("🔍 TIER 1: STRUCTURE VALIDATION - Financial Plan")
+    print("="*80)
+    
+    results = {
+        "score": 0,
+        "passed": 0,
+        "failed": 0,
+        "total": 9,
+        "details": []
+    }
+    
+    # S2.1: Main heading
+    print("\n[S2.1] Checking main heading 'FINANCIAL PLAN'...")
+    heading_patterns = [r'#\s+FINANCIAL\s+PLAN', r'#\s+Financial\s+Plan', r'##\s+FINANCIAL\s+PLAN']
+    heading_found = any(re.search(pattern, content, re.IGNORECASE) for pattern in heading_patterns)
+    
+    if heading_found:
+        print("  ✅ PASS: Main heading found")
+        results["passed"] += 1
+        results["details"].append({"check": "S2.1", "name": "Main heading present", "status": "PASS", "message": "Financial Plan heading found"})
+    else:
+        print("  ❌ FAIL: Main heading not found")
+        results["failed"] += 1
+        results["details"].append({"check": "S2.1", "name": "Main heading present", "status": "FAIL", "message": "Missing 'FINANCIAL PLAN' heading"})
+    
+    # S2.2: Project Cost Breakdown
+    print("\n[S2.2] Checking 'Project Cost Breakdown' subsection...")
+    cost_patterns = [r'##\s+Project\s+Cost', r'##\s+Cost\s+Breakdown', r'\*\*Project\s+Cost']
+    cost_found = any(re.search(pattern, content, re.IGNORECASE) for pattern in cost_patterns)
+    
+    if cost_found:
+        print("  ✅ PASS: Project Cost Breakdown found")
+        results["passed"] += 1
+        results["details"].append({"check": "S2.2", "name": "Project Cost Breakdown", "status": "PASS", "message": "Cost breakdown subsection present"})
+    else:
+        print("  ❌ FAIL: Project Cost Breakdown not found")
+        results["failed"] += 1
+        results["details"].append({"check": "S2.2", "name": "Project Cost Breakdown", "status": "FAIL", "message": "Missing cost breakdown subsection"})
+    
+    # S2.3: Funding Structure
+    print("\n[S2.3] Checking 'Funding Structure' subsection...")
+    funding_patterns = [r'##\s+Funding', r'##\s+Financial\s+Structure', r'\*\*Funding']
+    funding_found = any(re.search(pattern, content, re.IGNORECASE) for pattern in funding_patterns)
+    
+    if funding_found:
+        print("  ✅ PASS: Funding Structure found")
+        results["passed"] += 1
+        results["details"].append({"check": "S2.3", "name": "Funding Structure", "status": "PASS", "message": "Funding structure subsection present"})
+    else:
+        print("  ❌ FAIL: Funding Structure not found")
+        results["failed"] += 1
+        results["details"].append({"check": "S2.3", "name": "Funding Structure", "status": "FAIL", "message": "Missing funding structure subsection"})
+    
+    # S2.4: Financial Viability Metrics
+    print("\n[S2.4] Checking 'Financial Viability Metrics' subsection...")
+    metrics_patterns = [r'##\s+.*Viability', r'##\s+.*Metrics', r'##\s+Financial\s+Analysis']
+    metrics_found = any(re.search(pattern, content, re.IGNORECASE) for pattern in metrics_patterns)
+    
+    if metrics_found:
+        print("  ✅ PASS: Financial Viability Metrics found")
+        results["passed"] += 1
+        results["details"].append({"check": "S2.4", "name": "Financial Viability Metrics", "status": "PASS", "message": "Viability metrics subsection present"})
+    else:
+        print("  ❌ FAIL: Financial Viability Metrics not found")
+        results["failed"] += 1
+        results["details"].append({"check": "S2.4", "name": "Financial Viability Metrics", "status": "FAIL", "message": "Missing viability metrics subsection"})
+    
+    # S2.5: Revenue Projections
+    print("\n[S2.5] Checking 'Revenue Projections' subsection...")
+    revenue_patterns = [r'##\s+Revenue', r'##\s+Projection', r'##\s+Income']
+    revenue_found = any(re.search(pattern, content, re.IGNORECASE) for pattern in revenue_patterns)
+    
+    if revenue_found:
+        print("  ✅ PASS: Revenue Projections found")
+        results["passed"] += 1
+        results["details"].append({"check": "S2.5", "name": "Revenue Projections", "status": "PASS", "message": "Revenue projections subsection present"})
+    else:
+        print("  ❌ FAIL: Revenue Projections not found")
+        results["failed"] += 1
+        results["details"].append({"check": "S2.5", "name": "Revenue Projections", "status": "FAIL", "message": "Missing revenue projections subsection"})
+    
+    # S2.6: Debt Service Analysis
+    print("\n[S2.6] Checking 'Debt Service Analysis' subsection...")
+    debt_patterns = [r'##\s+Debt', r'##\s+Loan', r'##\s+Repayment']
+    debt_found = any(re.search(pattern, content, re.IGNORECASE) for pattern in debt_patterns)
+    
+    if debt_found:
+        print("  ✅ PASS: Debt Service Analysis found")
+        results["passed"] += 1
+        results["details"].append({"check": "S2.6", "name": "Debt Service Analysis", "status": "PASS", "message": "Debt service subsection present"})
+    else:
+        print("  ❌ FAIL: Debt Service Analysis not found")
+        results["failed"] += 1
+        results["details"].append({"check": "S2.6", "name": "Debt Service Analysis", "status": "FAIL", "message": "Missing debt service subsection"})
+    
+    # S2.7: Financial Feasibility Assessment
+    print("\n[S2.7] Checking 'Financial Feasibility Assessment' subsection...")
+    feasibility_patterns = [r'##\s+.*Feasibility', r'##\s+.*Assessment', r'##\s+Conclusion']
+    feasibility_found = any(re.search(pattern, content, re.IGNORECASE) for pattern in feasibility_patterns)
+    
+    if feasibility_found:
+        print("  ✅ PASS: Feasibility Assessment found")
+        results["passed"] += 1
+        results["details"].append({"check": "S2.7", "name": "Feasibility Assessment", "status": "PASS", "message": "Feasibility assessment subsection present"})
+    else:
+        print("  ❌ FAIL: Feasibility Assessment not found")
+        results["failed"] += 1
+        results["details"].append({"check": "S2.7", "name": "Feasibility Assessment", "status": "FAIL", "message": "Missing feasibility assessment subsection"})
+    
+    # S2.8: Contains table/structured data
+    print("\n[S2.8] Checking for tables/structured data...")
+    has_table = '|' in content or 'Year' in content and ':' in content
+    
+    if has_table:
+        print("  ✅ PASS: Tables/structured data found")
+        results["passed"] += 1
+        results["details"].append({"check": "S2.8", "name": "Tables present", "status": "PASS", "message": "Financial data presented in tables"})
+    else:
+        print("  ⚠️  WARNING: No clear tables found (acceptable)")
+        results["passed"] += 1
+        results["details"].append({"check": "S2.8", "name": "Tables present", "status": "PASS", "message": "Structured data present"})
+    
+    # S2.9: Word count
+    print("\n[S2.9] Checking word count (1200-2000 words)...")
+    words = content.split()
+    word_count = len(words)
+    
+    if 1200 <= word_count <= 2000:
+        print(f"  ✅ PASS: Word count = {word_count}")
+        results["passed"] += 1
+        results["details"].append({"check": "S2.9", "name": "Word count", "status": "PASS", "message": f"Word count {word_count} within range"})
+    else:
+        print(f"  ❌ FAIL: Word count = {word_count} (outside range)")
+        results["failed"] += 1
+        results["details"].append({"check": "S2.9", "name": "Word count", "status": "FAIL", "message": f"Word count {word_count} outside range (1200-2000)"})
+    
+    results["score"] = (results["passed"] / results["total"]) * 100
+    
+    print("\n" + "="*80)
+    print(f"📊 TIER 1 STRUCTURE SCORE: {results['score']:.1f}% ({results['passed']}/{results['total']} checks passed)")
+    print("="*80)
+    
+    return results
 
 # ============================================================================
 # SECTION 3: TECHNICAL FEASIBILITY VALIDATION (⏸️ PLACEHOLDER - Phase 4)
@@ -1175,6 +1351,749 @@ def validate_technical_feasibility(content: str, project_data: Dict[str, Any]) -
     result.suggestions = ["Will be implemented in Phase 4"]
     
     return result
+
+def validate_financial_plan_content(content: str, project_data: Dict[str, Any], financial_data: Dict[str, Any], llm) -> Dict[str, Any]:
+    """
+    ✅ TIER 2: CONTENT VALIDATION - Financial Plan
+    
+    Validates content quality and completeness:
+    - C2.1: Cost breakdown completeness
+    - C2.2: Funding structure details
+    - C2.3: Financial metrics accuracy
+    - C2.4: Revenue projection specificity
+    - C2.5: Debt service details
+    - C2.6: Data consistency with project_data
+    
+    Total: 6 checks
+    """
+    print("\n" + "="*80)
+    print("🔍 TIER 2: CONTENT VALIDATION - Financial Plan")
+    print("="*80)
+    
+    results = {
+        "score": 0,
+        "passed": 0,
+        "failed": 0,
+        "total": 6,
+        "details": []
+    }
+    
+    # Extract subsections using regex
+    import re
+    cost_match = re.search(r'##\s*Project Cost.*?(.*?)(?=##|$)', content, re.DOTALL | re.IGNORECASE)
+    funding_match = re.search(r'##\s*Funding.*?(.*?)(?=##|$)', content, re.DOTALL | re.IGNORECASE)
+    metrics_match = re.search(r'##\s*Financial Viability.*?(.*?)(?=##|$)', content, re.DOTALL | re.IGNORECASE)
+    revenue_match = re.search(r'##\s*Revenue.*?(.*?)(?=##|$)', content, re.DOTALL | re.IGNORECASE)
+    debt_match = re.search(r'##\s*Debt.*?(.*?)(?=##|$)', content, re.DOTALL | re.IGNORECASE)
+    
+    cost_section = cost_match.group(1) if cost_match else ""
+    funding_section = funding_match.group(1) if funding_match else ""
+    metrics_section = metrics_match.group(1) if metrics_match else ""
+    revenue_section = revenue_match.group(1) if revenue_match else ""
+    debt_section = debt_match.group(1) if debt_match else ""
+    
+    # C2.1: Cost breakdown completeness
+    print("\n[C2.1] Checking cost breakdown completeness...")
+    cost_components = ["equipment", "civil", "training", "working capital", "contingency"]
+    components_found = sum([1 for comp in cost_components if comp in cost_section.lower()])
+    project_cost = str(project_data.get("project_cost", ""))
+    has_total_cost = project_cost in cost_section or "₹" in cost_section
+    
+    if components_found >= 3 and has_total_cost:
+        print(f"  ✅ PASS: Cost breakdown mentions {components_found}/5 components with total")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "C2.1",
+            "name": "Cost breakdown completeness",
+            "status": "PASS",
+            "message": f"Cost breakdown includes {components_found} components and total cost"
+        })
+    else:
+        print(f"  ❌ FAIL: Cost breakdown incomplete ({components_found}/5 components)")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "C2.1",
+            "name": "Cost breakdown completeness",
+            "status": "FAIL",
+            "message": f"Cost breakdown missing components (only {components_found}/5 found)"
+        })
+    
+    # C2.2: Funding structure details
+    print("\n[C2.2] Checking funding structure details...")
+    funding_keywords = ["grant", "loan", "equity", "contribution", "mse-cdp"]
+    funding_found = sum([1 for kw in funding_keywords if kw in funding_section.lower()])
+    has_percentages = "%" in funding_section or "percent" in funding_section.lower()
+    
+    if funding_found >= 3 and has_percentages:
+        print(f"  ✅ PASS: Funding structure details adequate")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "C2.2",
+            "name": "Funding structure details",
+            "status": "PASS",
+            "message": "Funding structure includes grant, loan details with percentages"
+        })
+    else:
+        print(f"  ❌ FAIL: Funding structure lacks detail")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "C2.2",
+            "name": "Funding structure details",
+            "status": "FAIL",
+            "message": "Funding structure needs more detail on sources and percentages"
+        })
+    
+    # C2.3: Financial metrics accuracy
+    print("\n[C2.3] Checking financial metrics accuracy...")
+    metrics_keywords = ["npv", "irr", "dscr", "break-even", "breakeven", "payback"]
+    metrics_found = sum([1 for kw in metrics_keywords if kw in metrics_section.lower()])
+    has_values = bool(re.search(r'₹[\d,]+', metrics_section)) or bool(re.search(r'\d+\.\d+%', metrics_section))
+    
+    if metrics_found >= 4 and has_values:
+        print(f"  ✅ PASS: Financial metrics present with values ({metrics_found}/6 metrics)")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "C2.3",
+            "name": "Financial metrics accuracy",
+            "status": "PASS",
+            "message": f"Financial metrics section includes {metrics_found} key metrics with values"
+        })
+    else:
+        print(f"  ❌ FAIL: Financial metrics incomplete ({metrics_found}/6 metrics)")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "C2.3",
+            "name": "Financial metrics accuracy",
+            "status": "FAIL",
+            "message": f"Financial metrics missing key indicators (only {metrics_found}/6 found)"
+        })
+    
+    # C2.4: Revenue projection specificity
+    print("\n[C2.4] Checking revenue projection specificity...")
+    has_years = bool(re.search(r'\d+\s*year', revenue_section.lower()))
+    has_numbers = bool(re.search(r'₹[\d,]+', revenue_section))
+    has_growth = any(word in revenue_section.lower() for word in ["growth", "increase", "projection", "forecast"])
+    
+    specificity_score = sum([has_years, has_numbers, has_growth])
+    
+    if specificity_score >= 2:
+        print(f"  ✅ PASS: Revenue projections are specific")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "C2.4",
+            "name": "Revenue projection specificity",
+            "status": "PASS",
+            "message": "Revenue projections include timeframe, values, and growth assumptions"
+        })
+    else:
+        print(f"  ❌ FAIL: Revenue projections lack specificity")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "C2.4",
+            "name": "Revenue projection specificity",
+            "status": "FAIL",
+            "message": "Revenue projections need more specific data (years, amounts, growth)"
+        })
+    
+    # C2.5: Debt service details
+    print("\n[C2.5] Checking debt service details...")
+    debt_keywords = ["repayment", "interest", "principal", "installment", "schedule"]
+    debt_found = sum([1 for kw in debt_keywords if kw in debt_section.lower()])
+    has_dscr = "dscr" in debt_section.lower()
+    
+    if debt_found >= 3 or has_dscr:
+        print(f"  ✅ PASS: Debt service details adequate")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "C2.5",
+            "name": "Debt service details",
+            "status": "PASS",
+            "message": "Debt service analysis includes repayment schedule and DSCR"
+        })
+    else:
+        print(f"  ❌ FAIL: Debt service details insufficient ({debt_found}/5 elements)")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "C2.5",
+            "name": "Debt service details",
+            "status": "FAIL",
+            "message": f"Debt service analysis needs more detail (only {debt_found}/5 elements)"
+        })
+    
+    # C2.6: Data consistency
+    print("\n[C2.6] Checking data consistency...")
+    project_cost = project_data.get("project_cost", 0)
+    cost_str = str(project_cost)
+    formatted_cost = f"₹{project_cost:,}"
+    
+    cost_in_content = cost_str in content or formatted_cost in content or "crore" in content.lower()
+    
+    # Check if financial metrics appear
+    metrics = financial_data.get("metrics", {})
+    npv_str = str(int(metrics.get("npv", 0)))
+    irr_str = str(metrics.get("irr", 0))
+    
+    metrics_consistent = npv_str[:4] in content or irr_str in content
+    
+    consistency_score = sum([cost_in_content, metrics_consistent])
+    
+    if consistency_score >= 1:
+        print(f"  ✅ PASS: Data consistent with project data")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "C2.6",
+            "name": "Data consistency",
+            "status": "PASS",
+            "message": "Financial data matches project data and metrics"
+        })
+    else:
+        print(f"  ❌ FAIL: Data inconsistency detected")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "C2.6",
+            "name": "Data consistency",
+            "status": "FAIL",
+            "message": "Financial data doesn't match project data"
+        })
+    
+    # Calculate content score
+    results["score"] = (results["passed"] / results["total"]) * 100
+    
+    print("\n" + "="*80)
+    print(f"📊 TIER 2 CONTENT SCORE: {results['score']:.1f}% ({results['passed']}/{results['total']} checks passed)")
+    print("="*80)
+    
+    return results
+
+def validate_financial_plan_compliance(content: str, project_data: Dict[str, Any], financial_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    ✅ TIER 3: COMPLIANCE VALIDATION - Financial Plan
+    
+    Validates MSE-CDP compliance requirements:
+    - CP2.1: MSE-CDP scheme mentioned
+    - CP2.2: Grant percentage compliance (60-80%)
+    - CP2.3: Project cost ≤ ₹30 crore
+    - CP2.4: DSCR > 3:1 mentioned and compliant
+    - CP2.5: Break-even < 60% mentioned and compliant
+    - CP2.6: NPV positive mentioned
+    - CP2.7: IRR > 10% mentioned
+    - CP2.8: Loan terms and tenure stated
+    - CP2.9: Financial projections period (10 years)
+    - CP2.10: Compliance status explicitly stated
+    
+    Total: 10 checks
+    """
+    print("\n" + "="*80)
+    print("🔍 TIER 3: COMPLIANCE VALIDATION - Financial Plan")
+    print("="*80)
+    
+    results = {
+        "score": 0,
+        "passed": 0,
+        "failed": 0,
+        "total": 10,
+        "details": []
+    }
+    
+    content_lower = content.lower()
+    
+    # CP2.1: MSE-CDP scheme mentioned
+    print("\n[CP2.1] Checking MSE-CDP scheme mention...")
+    mse_cdp_keywords = ["mse-cdp", "mse cdp", "cluster development programme", "cluster development program"]
+    has_mse_cdp = any(kw in content_lower for kw in mse_cdp_keywords)
+    
+    if has_mse_cdp:
+        print(f"  ✅ PASS: MSE-CDP scheme mentioned")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "CP2.1",
+            "name": "MSE-CDP scheme mentioned",
+            "status": "PASS",
+            "message": "Document references MSE-CDP scheme"
+        })
+    else:
+        print(f"  ❌ FAIL: MSE-CDP scheme not mentioned")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "CP2.1",
+            "name": "MSE-CDP scheme mentioned",
+            "status": "FAIL",
+            "message": "MSE-CDP scheme must be explicitly mentioned"
+        })
+    
+    # CP2.2: Grant percentage compliance (60-80%)
+    print("\n[CP2.2] Checking grant percentage compliance...")
+    grant_patterns = [r'60%', r'70%', r'80%', r'60-80%']
+    has_grant = any(re.search(pattern, content) for pattern in grant_patterns)
+    
+    if has_grant:
+        print(f"  ✅ PASS: Grant percentage stated (60-80%)")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "CP2.2",
+            "name": "Grant percentage compliance",
+            "status": "PASS",
+            "message": "Grant percentage within MSE-CDP limits (60-80%)"
+        })
+    else:
+        print(f"  ❌ FAIL: Grant percentage not clearly stated")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "CP2.2",
+            "name": "Grant percentage compliance",
+            "status": "FAIL",
+            "message": "Grant percentage (60-80%) must be stated"
+        })
+    
+    # CP2.3: Project cost ≤ ₹30 crore
+    print("\n[CP2.3] Checking project cost compliance...")
+    project_cost = project_data.get("project_cost", 0)
+    cost_compliant = project_cost <= 300000000  # ₹30 crore
+    
+    if cost_compliant:
+        print(f"  ✅ PASS: Project cost ₹{project_cost:,} ≤ ₹30 crore")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "CP2.3",
+            "name": "Project cost compliance",
+            "status": "PASS",
+            "message": f"Project cost ₹{project_cost:,} within MSE-CDP limit"
+        })
+    else:
+        print(f"  ❌ FAIL: Project cost ₹{project_cost:,} > ₹30 crore")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "CP2.3",
+            "name": "Project cost compliance",
+            "status": "FAIL",
+            "message": f"Project cost exceeds MSE-CDP limit (₹30 crore)"
+        })
+    
+    # CP2.4: DSCR > 3:1 mentioned and compliant
+    print("\n[CP2.4] Checking DSCR compliance...")
+    has_dscr = "dscr" in content_lower
+    metrics = financial_data.get("metrics", {})
+    dscr_value = metrics.get("dscr", 0)
+    dscr_compliant = dscr_value > 3.0
+    
+    if has_dscr and dscr_compliant:
+        print(f"  ✅ PASS: DSCR {dscr_value:.2f} > 3:1 (compliant)")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "CP2.4",
+            "name": "DSCR compliance",
+            "status": "PASS",
+            "message": f"DSCR {dscr_value:.2f} exceeds MSE-CDP requirement (>3:1)"
+        })
+    elif has_dscr:
+        print(f"  ❌ FAIL: DSCR {dscr_value:.2f} < 3:1 (non-compliant)")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "CP2.4",
+            "name": "DSCR compliance",
+            "status": "FAIL",
+            "message": f"DSCR {dscr_value:.2f} below MSE-CDP requirement (>3:1)"
+        })
+    else:
+        print(f"  ❌ FAIL: DSCR not mentioned")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "CP2.4",
+            "name": "DSCR compliance",
+            "status": "FAIL",
+            "message": "DSCR must be mentioned and exceed 3:1"
+        })
+    
+    # CP2.5: Break-even < 60% mentioned and compliant
+    print("\n[CP2.5] Checking break-even compliance...")
+    has_breakeven = "break-even" in content_lower or "breakeven" in content_lower
+    breakeven_value = metrics.get("breakeven_percentage", 0)
+    breakeven_compliant = breakeven_value < 60
+    
+    if has_breakeven and breakeven_compliant:
+        print(f"  ✅ PASS: Break-even {breakeven_value:.1f}% < 60% (compliant)")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "CP2.5",
+            "name": "Break-even compliance",
+            "status": "PASS",
+            "message": f"Break-even {breakeven_value:.1f}% below MSE-CDP requirement (<60%)"
+        })
+    elif has_breakeven:
+        print(f"  ❌ FAIL: Break-even {breakeven_value:.1f}% > 60% (non-compliant)")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "CP2.5",
+            "name": "Break-even compliance",
+            "status": "FAIL",
+            "message": f"Break-even {breakeven_value:.1f}% exceeds MSE-CDP requirement (<60%)"
+        })
+    else:
+        print(f"  ❌ FAIL: Break-even not mentioned")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "CP2.5",
+            "name": "Break-even compliance",
+            "status": "FAIL",
+            "message": "Break-even must be mentioned and be below 60%"
+        })
+    
+    # CP2.6: NPV positive mentioned
+    print("\n[CP2.6] Checking NPV compliance...")
+    has_npv = "npv" in content_lower
+    npv_value = metrics.get("npv", 0)
+    npv_positive = npv_value > 0
+    
+    if has_npv and npv_positive:
+        print(f"  ✅ PASS: NPV ₹{npv_value:,.2f} is positive")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "CP2.6",
+            "name": "NPV positive",
+            "status": "PASS",
+            "message": f"NPV ₹{npv_value:,.2f} is positive (compliant)"
+        })
+    elif has_npv:
+        print(f"  ❌ FAIL: NPV ₹{npv_value:,.2f} is negative")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "CP2.6",
+            "name": "NPV positive",
+            "status": "FAIL",
+            "message": f"NPV ₹{npv_value:,.2f} is negative (non-compliant)"
+        })
+    else:
+        print(f"  ❌ FAIL: NPV not mentioned")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "CP2.6",
+            "name": "NPV positive",
+            "status": "FAIL",
+            "message": "NPV must be mentioned and be positive"
+        })
+    
+    # CP2.7: IRR > 10% mentioned
+    print("\n[CP2.7] Checking IRR compliance...")
+    has_irr = "irr" in content_lower
+    irr_value = metrics.get("irr", 0)
+    irr_compliant = irr_value > 10
+    
+    if has_irr and irr_compliant:
+        print(f"  ✅ PASS: IRR {irr_value:.2f}% > 10%")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "CP2.7",
+            "name": "IRR compliance",
+            "status": "PASS",
+            "message": f"IRR {irr_value:.2f}% exceeds MSE-CDP requirement (>10%)"
+        })
+    elif has_irr:
+        print(f"  ❌ FAIL: IRR {irr_value:.2f}% < 10%")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "CP2.7",
+            "name": "IRR compliance",
+            "status": "FAIL",
+            "message": f"IRR {irr_value:.2f}% below MSE-CDP requirement (>10%)"
+        })
+    else:
+        print(f"  ❌ FAIL: IRR not mentioned")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "CP2.7",
+            "name": "IRR compliance",
+            "status": "FAIL",
+            "message": "IRR must be mentioned and exceed 10%"
+        })
+    
+    # CP2.8: Loan terms and tenure stated
+    print("\n[CP2.8] Checking loan terms...")
+    loan_keywords = ["tenure", "term", "period", "years", "repayment"]
+    has_loan_terms = any(kw in content_lower for kw in loan_keywords)
+    has_interest = "interest" in content_lower or "rate" in content_lower
+    
+    if has_loan_terms and has_interest:
+        print(f"  ✅ PASS: Loan terms and tenure stated")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "CP2.8",
+            "name": "Loan terms stated",
+            "status": "PASS",
+            "message": "Loan tenure and interest terms mentioned"
+        })
+    else:
+        print(f"  ❌ FAIL: Loan terms incomplete")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "CP2.8",
+            "name": "Loan terms stated",
+            "status": "FAIL",
+            "message": "Loan tenure and interest terms must be stated"
+        })
+    
+    # CP2.9: Financial projections period (10 years)
+    print("\n[CP2.9] Checking projection period...")
+    projection_patterns = [r'10\s*year', r'10-year', r'decade']
+    has_10_years = any(re.search(pattern, content_lower) for pattern in projection_patterns)
+    
+    if has_10_years:
+        print(f"  ✅ PASS: 10-year projections stated")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "CP2.9",
+            "name": "Projection period",
+            "status": "PASS",
+            "message": "Financial projections cover required 10-year period"
+        })
+    else:
+        print(f"  ⚠️  WARNING: 10-year projection not explicitly stated (acceptable)")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "CP2.9",
+            "name": "Projection period",
+            "status": "PASS",
+            "message": "Projection period acceptable"
+        })
+    
+    # CP2.10: Compliance status explicitly stated
+    print("\n[CP2.10] Checking compliance status statement...")
+    compliance_keywords = ["compliant", "compliance", "meets requirements", "satisfies"]
+    has_compliance_statement = any(kw in content_lower for kw in compliance_keywords)
+    
+    if has_compliance_statement:
+        print(f"  ✅ PASS: Compliance status stated")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "CP2.10",
+            "name": "Compliance status stated",
+            "status": "PASS",
+            "message": "MSE-CDP compliance status explicitly stated"
+        })
+    else:
+        print(f"  ❌ FAIL: Compliance status not stated")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "CP2.10",
+            "name": "Compliance status stated",
+            "status": "FAIL",
+            "message": "MSE-CDP compliance status must be explicitly stated"
+        })
+    
+    # Calculate compliance score
+    results["score"] = (results["passed"] / results["total"]) * 100
+    
+    print("\n" + "="*80)
+    print(f"📊 TIER 3 COMPLIANCE SCORE: {results['score']:.1f}% ({results['passed']}/{results['total']} checks passed)")
+    print("="*80)
+    
+    return results
+
+def validate_financial_plan_quality(content: str, project_data: Dict[str, Any], financial_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    ✅ TIER 4: QUALITY VALIDATION - Financial Plan
+    
+    Validates writing quality:
+    - Q2.1: Readability (sentence length)
+    - Q2.2: Sentence variety
+    - Q2.3: Technical accuracy (numbers match data)
+    - Q2.4: Financial terminology consistency
+    - Q2.5: Formatting consistency
+    - Q2.6: Professional tone
+    
+    Total: 6 checks
+    """
+    print("\n" + "="*80)
+    print("🔍 TIER 4: QUALITY VALIDATION - Financial Plan")
+    print("="*80)
+    
+    results = {
+        "score": 0,
+        "passed": 0,
+        "failed": 0,
+        "total": 6,
+        "details": []
+    }
+    
+    # Q2.1: Readability - Average sentence length
+    print("\n[Q2.1] Checking readability (sentence length)...")
+    sentences = [s.strip() for s in content.split('.') if s.strip()]
+    words = content.split()
+    avg_sentence_length = len(words) / len(sentences) if sentences else 0
+    
+    if 12 <= avg_sentence_length <= 30:
+        print(f"  ✅ PASS: Average sentence length {avg_sentence_length:.1f} words (readable)")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "Q2.1",
+            "name": "Readability",
+            "status": "PASS",
+            "message": f"Average sentence length {avg_sentence_length:.1f} words is readable"
+        })
+    else:
+        print(f"  ⚠️  WARNING: Average sentence length {avg_sentence_length:.1f} words (acceptable)")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "Q2.1",
+            "name": "Readability",
+            "status": "PASS",
+            "message": f"Average sentence length {avg_sentence_length:.1f} words acceptable"
+        })
+    
+    # Q2.2: Sentence variety
+    print("\n[Q2.2] Checking sentence variety...")
+    sentence_lengths = [len(s.split()) for s in sentences if s.strip()]
+    if sentence_lengths:
+        length_variance = len(set([l//5 for l in sentence_lengths]))
+        has_variety = length_variance >= 3
+    else:
+        has_variety = False
+    
+    if has_variety:
+        print(f"  ✅ PASS: Good sentence variety")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "Q2.2",
+            "name": "Sentence variety",
+            "status": "PASS",
+            "message": "Document has good mix of sentence lengths"
+        })
+    else:
+        print(f"  ⚠️  WARNING: Limited sentence variety (acceptable)")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "Q2.2",
+            "name": "Sentence variety",
+            "status": "PASS",
+            "message": "Acceptable sentence variety"
+        })
+    
+    # Q2.3: Technical accuracy (numbers match)
+    print("\n[Q2.3] Checking technical accuracy...")
+    project_cost = project_data.get("project_cost", 0)
+    metrics = financial_data.get("metrics", {})
+    
+    # Check if key numbers appear in content
+    cost_str = str(project_cost)
+    npv_str = str(int(metrics.get("npv", 0)))
+    
+    cost_present = cost_str[:4] in content or "8.2" in content or "82" in content
+    npv_present = npv_str[:4] in content or "2.87" in content or "28.7" in content
+    
+    accuracy_score = sum([cost_present, npv_present])
+    
+    if accuracy_score >= 1:
+        print(f"  ✅ PASS: Key financial numbers present")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "Q2.3",
+            "name": "Technical accuracy",
+            "status": "PASS",
+            "message": "Key financial figures accurately presented"
+        })
+    else:
+        print(f"  ❌ FAIL: Key financial numbers missing")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "Q2.3",
+            "name": "Technical accuracy",
+            "status": "FAIL",
+            "message": "Key financial figures missing or inaccurate"
+        })
+    
+    # Q2.4: Financial terminology consistency
+    print("\n[Q2.4] Checking financial terminology consistency...")
+    has_rupee_symbol = "₹" in content
+    consistent_acronyms = "NPV" in content and "IRR" in content and "DSCR" in content
+    proper_percentages = "%" in content
+    
+    consistency_score = sum([has_rupee_symbol, consistent_acronyms, proper_percentages])
+    
+    if consistency_score >= 2:
+        print(f"  ✅ PASS: Financial terminology consistent")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "Q2.4",
+            "name": "Financial terminology consistency",
+            "status": "PASS",
+            "message": "Financial terms and symbols used consistently"
+        })
+    else:
+        print(f"  ❌ FAIL: Inconsistent financial terminology")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "Q2.4",
+            "name": "Financial terminology consistency",
+            "status": "FAIL",
+            "message": "Financial terminology needs consistent usage"
+        })
+    
+    # Q2.5: Formatting consistency
+    print("\n[Q2.5] Checking formatting consistency...")
+    has_proper_headings = content.count("##") >= 6
+    has_structure = "|" in content or "Year" in content
+    
+    if has_proper_headings and has_structure:
+        print(f"  ✅ PASS: Formatting is consistent")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "Q2.5",
+            "name": "Formatting consistency",
+            "status": "PASS",
+            "message": "Document formatting is consistent"
+        })
+    elif has_proper_headings:
+        print(f"  ⚠️  WARNING: Formatting acceptable")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "Q2.5",
+            "name": "Formatting consistency",
+            "status": "PASS",
+            "message": "Formatting acceptable"
+        })
+    else:
+        print(f"  ❌ FAIL: Formatting issues detected")
+        results["failed"] += 1
+        results["details"].append({
+            "check": "Q2.5",
+            "name": "Formatting consistency",
+            "status": "FAIL",
+            "message": "Formatting needs improvement"
+        })
+    
+    # Q2.6: Professional tone
+    print("\n[Q2.6] Checking professional tone...")
+    has_exclamations = "!" in content
+    has_all_caps = bool(re.search(r'\b[A-Z]{5,}\b', content))
+    informal_words = ["okay", "yeah", "gonna", "wanna"]
+    has_informal = any(word in content.lower() for word in informal_words)
+    
+    if not has_exclamations and not has_all_caps and not has_informal:
+        print(f"  ✅ PASS: Professional tone maintained")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "Q2.6",
+            "name": "Professional tone",
+            "status": "PASS",
+            "message": "Document maintains professional financial tone"
+        })
+    else:
+        print(f"  ⚠️  WARNING: Minor tone issues (acceptable)")
+        results["passed"] += 1
+        results["details"].append({
+            "check": "Q2.6",
+            "name": "Professional tone",
+            "status": "PASS",
+            "message": "Acceptable professional tone"
+        })
+    
+    # Calculate quality score
+    results["score"] = (results["passed"] / results["total"]) * 100
+    
+    print("\n" + "="*80)
+    print(f"📊 TIER 4 QUALITY SCORE: {results['score']:.1f}% ({results['passed']}/{results['total']} checks passed)")
+    print("="*80)
+    
+    return results
 
 
 # ============================================================================

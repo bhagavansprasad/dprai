@@ -765,9 +765,10 @@ Write 5-6 paragraphs with specific details. Be professional and comprehensive.""
 def generate_financial_plan(project_data: Dict, financial_data: Dict, llm) -> str:
     """
     Generate Financial Plan using Template + LLM + Real Metrics
+    FIXED: Now uses structured subsections
     """
     print("  📝 Generating: Financial Plan")
-    print("     🔧 [DEBUG] Using Template + LLM + Real Financial Metrics")
+    print("     🔧 [DEBUG] Using structured template with real financial metrics")
     
     cost = project_data.get("project_cost", 0)
     metrics = financial_data.get("metrics", {})
@@ -775,77 +776,111 @@ def generate_financial_plan(project_data: Dict, financial_data: Dict, llm) -> st
     compliance = financial_data.get("mse_cdp_compliance", {})
     projections = financial_data.get("projections", {})
     
-    # Build detailed financial metrics text
-    financial_metrics_text = f"""
+    system_prompt = """You are a financial analyst specializing in MSME project financing under MSE-CDP.
+
+CRITICAL REQUIREMENTS:
+1. Generate content with EXACT markdown subsection headings (## heading format)
+2. Follow the structure EXACTLY as specified
+3. Write 1200-2000 words total
+4. Use formal, professional financial language
+5. Be specific with numbers and financial data
+6. No meta-commentary
+7. Write as final polished DPR section
+8. Do NOT include main heading (# FINANCIAL PLAN) - it will be added automatically"""
+
+    user_prompt = f"""Generate a complete Financial Plan section with EXACTLY these subsections in order:
+
+## Project Cost Breakdown
+Write 2-3 paragraphs covering:
+- Total project cost: ₹{cost:,}
+- Breakdown by category (equipment, civil works, training, working capital, contingency)
+- Cost justification and basis of estimates
+- Any cost optimization measures
+
+## Funding Structure  
+Write 2-3 paragraphs covering:
+- Total funding requirement: ₹{cost:,}
+- Grant component: ₹{loan_details.get('grant_amount', 0):,.2f} ({loan_details.get('grant_percentage', 0):.0f}% under MSE-CDP)
+- Loan component: ₹{loan_details.get('loan_amount', 0):,.2f}
+- Member contribution/equity (if any)
+- Funding sources and terms
+- Loan tenure, interest rate, moratorium period
+
 ## Financial Viability Metrics
+Write 2-3 paragraphs covering these EXACT metrics:
+- Net Present Value (NPV): ₹{metrics.get('npv', 0):,.2f} ({'positive - PASS' if metrics.get('npv', 0) > 0 else 'negative - FAIL'})
+- Internal Rate of Return (IRR): {metrics.get('irr', 0):.2f}% ({'exceeds 10% - PASS' if metrics.get('irr', 0) > 10 else 'below 10% - FAIL'})
+- Debt Service Coverage Ratio (DSCR): {metrics.get('dscr', 0):.2f} ({'exceeds 3:1 - PASS' if metrics.get('dscr', 0) > 3.0 else 'below 3:1 - FAIL'})
+- Break-even: {metrics.get('breakeven_percentage', 0):.1f}% capacity ({'below 60% - PASS' if metrics.get('breakeven_percentage', 0) < 60 else 'exceeds 60% - FAIL'})
+- Payback Period: {metrics.get('payback_period_years', 0):.1f} years
+- MSE-CDP Compliance: {compliance.get('status', 'UNKNOWN')}
+Explain what each metric means and why the project passes/fails
 
-Based on detailed financial modeling, the project demonstrates the following key metrics:
+## Revenue Projections
+Write 2-3 paragraphs covering:
+- Revenue model and sources
+- Year-wise revenue projections ({projections.get('duration_years', 10)} years)
+- Growth assumptions and basis
+- Capacity utilization assumptions
+- Market demand justification
+- Operating expenses and profitability
 
-**Net Present Value (NPV):** ₹{metrics.get('npv', 0):,.2f}
-- Status: {'✅ PASS' if metrics.get('npv', 0) > 0 else '❌ FAIL'} (Requirement: > 0)
-- Indicates positive return on investment over project lifetime
+## Debt Service Analysis
+Write 2-3 paragraphs covering:
+- Loan amount: ₹{loan_details.get('loan_amount', 0):,.2f}
+- Repayment schedule (year-wise)
+- Interest payments
+- Principal repayments  
+- Total debt service obligations
+- DSCR year-wise showing ability to service debt
+- Surplus cash flow analysis
 
-**Internal Rate of Return (IRR):** {metrics.get('irr', 0):.2f}%
-- Status: {'✅ PASS' if metrics.get('irr', 0) > 10 else '❌ FAIL'} (Requirement: > 10%)
-- Demonstrates attractive return compared to alternative investments
+## Financial Feasibility Assessment
+Write 1-2 paragraphs with:
+- Overall financial viability conclusion
+- Key strengths (NPV positive, IRR > 10%, DSCR > 3:1)
+- Risk mitigation for financial sustainability
+- Recommendation on financial feasibility
 
-**Debt Service Coverage Ratio (DSCR):** {metrics.get('dscr', 0):.2f}
-- Status: {'✅ PASS' if metrics.get('dscr', 0) > 3.0 else '❌ FAIL'} (MSE-CDP Requirement: > 3:1)
-- Indicates {'strong' if metrics.get('dscr', 0) > 3.0 else 'needs improvement in'} debt servicing capacity
-
-**Break-even Point:** {metrics.get('breakeven_percentage', 0):.1f}%
-- Status: {'✅ PASS' if metrics.get('breakeven_percentage', 0) < 60 else '❌ FAIL'} (MSE-CDP Requirement: < 60%)
-- Project reaches break-even at {metrics.get('breakeven_percentage', 0):.1f}% capacity utilization
-
-**Payback Period:** {metrics.get('payback_period_years', 0):.1f} years
-- Investment will be recovered in {metrics.get('payback_period_years', 0):.1f} years
-
-**MSE-CDP Compliance Status:** {compliance.get('status', 'UNKNOWN')}
-"""
-
-    system_prompt = """You are a financial analyst specializing in MSME project financing.
-Generate professional content for the Financial Plan section of a DPR.
-Use the provided financial data and metrics.
-Explain financial viability clearly for both technical and non-technical readers.
-Write in formal, professional tone."""
-
-    user_prompt = f"""Generate content for Financial Plan section:
-
-PROJECT COST: ₹{cost:,}
-
-FUNDING STRUCTURE:
-- Grant Amount: ₹{loan_details.get('grant_amount', 0):,.2f} ({loan_details.get('grant_percentage', 0):.0f}%)
-- Loan Amount: ₹{loan_details.get('loan_amount', 0):,.2f}
-
-FINANCIAL METRICS (already formatted above)
-
-PROJECTIONS: {projections.get('duration_years', 10)}-year projections available
-
-Generate content covering:
-1. PROJECT COST BREAKDOWN - Detailed cost components
-2. FUNDING STRUCTURE - Grant and loan details, terms
-3. REVENUE PROJECTIONS - Expected income streams over time
-4. DEBT SERVICE ANALYSIS - Loan repayment schedule and capacity
-5. FINANCIAL FEASIBILITY ASSESSMENT - Overall viability conclusion
-
-Write 4-5 paragraphs. Integrate the metrics provided. Be specific and data-driven.
-
-NOTE: The financial metrics section is already formatted above, include it in your response."""
+CRITICAL:
+- Use EXACT heading format: "## Project Cost Breakdown" (not variations)
+- Total length: 1200-2000 words
+- Include all metrics and numbers provided
+- Professional financial analysis tone
+- No meta-commentary"""
 
     sys_msg = SystemMessage(content=system_prompt)
     user_msg = HumanMessage(content=user_prompt)
     
-    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    print("     🤖 [DEBUG] Invoking LLM for structured content generation...")
     response = llm.invoke([sys_msg, user_msg])
-    content = response.content
+    content = response.content.strip()
     
-    print("     ✅ [DEBUG] Financial Plan generated")
+    # Verify subsections
+    required_subsections = [
+        "## Project Cost Breakdown",
+        "## Funding Structure",
+        "## Financial Viability Metrics",
+        "## Revenue Projections",
+        "## Debt Service Analysis",
+        "## Financial Feasibility Assessment"
+    ]
     
-    # Combine LLM content with real metrics
-    full_content = f"# FINANCIAL PLAN\n\n{content}\n\n{financial_metrics_text}"
+    missing = []
+    for subsection in required_subsections:
+        if subsection not in content:
+            missing.append(subsection)
+            print(f"     ⚠️  [WARNING] Missing: {subsection}")
     
-    return full_content
-
+    if not missing:
+        print(f"     ✅ [DEBUG] All 6 subsections present")
+    
+    word_count = len(content.split())
+    print(f"     📊 [DEBUG] Word count: {word_count} (target: 1200-2000)")
+    
+    print("     ✅ [DEBUG] Financial Plan generated with structure")
+    
+    return f"# FINANCIAL PLAN\n\n{content}"
 
 # ============================================================================
 # STAGE 5: NEW CONTENT GENERATORS

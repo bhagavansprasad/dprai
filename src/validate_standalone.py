@@ -24,6 +24,7 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from validation_agent import validate_executive_summary, ValidationResult, generate_validation_report
+from validation_agent import validate_financial_plan
 
 
 # ============================================================================
@@ -163,24 +164,37 @@ def test_real_data(output_path: str, project_data: dict):
     print("🔍 PRIMARY TEST: REAL GENERATED DPR FILES")
     print("="*80)
     
-    executive_summary_path = Path(output_path) / "01_executive_summary.md"
+    # executive_summary_path = Path(output_path) / "01_executive_summary.md"
+    financial_plan_path = Path(output_path) / "03_financial_plan.md"    
     
-    print(f"\n📁 Reading: {executive_summary_path}")
+    # print(f"\n📁 Reading: {executive_summary_path}")
+    print(f"\n📁 Reading: {financial_plan_path}")
     
-    content, success, error = read_dpr_file(str(executive_summary_path))
+    # content, success, error = read_dpr_file(str(executive_summary_path))
+    content, success, error = read_dpr_file(str(financial_plan_path))
     
     if not success:
         print(f"\n❌ ERROR: {error}")
         print("\n💡 Make sure the path is correct:")
-        print(f"   Expected: {executive_summary_path}")
+        # print(f"   Expected: {executive_summary_path}")
+        print(f"   Expected: {financial_plan_path}")
         return None
     
     print(f"✅ File loaded successfully ({len(content)} characters)")
     
     # Run validation
     print("\n" + "🔬"*40)
-    result = validate_executive_summary(content, project_data)
-    
+    # result = validate_executive_summary(content, project_data)
+    # Use dummy financial data for validation
+    financial_data = {
+        "metrics": {
+            "npv": 28700000,
+            "irr": 15.5,
+            "dscr": 3.5,
+            "breakeven_percentage": 55
+        }
+    }
+    result = validate_financial_plan(content, project_data, financial_data)
     # Display results
     print("\n" + "="*80)
     print("📊 REAL DATA VALIDATION RESULTS")
