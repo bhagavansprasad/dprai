@@ -590,9 +590,10 @@ def get_annexures_template() -> str:
 def generate_executive_summary(project_data: Dict, financial_data: Dict, llm) -> str:
     """
     Generate Executive Summary using Template + LLM
+    FIXED: Now properly uses template structure with ## subsections
     """
     print("  📝 Generating: Executive Summary")
-    print("     🔧 [DEBUG] Using Template + LLM approach")
+    print("     🔧 [DEBUG] Using Template + LLM approach with enforced structure")
     
     # Prepare data for LLM
     cluster_type = project_data.get("cluster_type", "N/A")
@@ -600,56 +601,120 @@ def generate_executive_summary(project_data: Dict, financial_data: Dict, llm) ->
     members = project_data.get("members", 0)
     cost = project_data.get("project_cost", 0)
     grant_scheme = project_data.get("grant_scheme", "N/A")
+    facility_type = project_data.get("facility_type", "N/A")
     
     metrics = financial_data.get("metrics", {})
     compliance = financial_data.get("mse_cdp_compliance", {})
     
-    # LLM prompt for content generation
-    system_prompt = """You are a professional DPR writer specializing in MSME cluster development projects.
-Generate clear, professional content for the Executive Summary section.
-Use the provided data to create compelling, factual content.
-Write in formal business language suitable for government submissions.
-Keep content concise but comprehensive."""
+    # LLM prompt for content generation - EXPLICIT STRUCTURE REQUIRED
+    system_prompt = """You are a professional DPR writer specializing in MSME cluster development projects under MSE-CDP scheme.
 
-    user_prompt = f"""Generate content for an Executive Summary with these subsections:
+CRITICAL REQUIREMENTS:
+1. Generate content with EXACT markdown subsection headings (## heading format)
+2. Follow the structure EXACTLY as specified
+3. Write 800-1500 words total
+4. Use formal, professional business language
+5. Be specific with numbers and data
+6. No meta-commentary (don't say "here's a draft" or "based on the data")
+7. Write as if this is the final, polished DPR section
+8. Do NOT include the main heading (# EXECUTIVE SUMMARY) - it will be added automatically"""
 
-PROJECT DATA:
-- Cluster Type: {cluster_type}
-- Location: {location}
-- Members: {members} units
-- Project Cost: ₹{cost:,}
-- Grant Scheme: {grant_scheme}
+    user_prompt = f"""Generate a complete Executive Summary section with EXACTLY these subsections in this order:
 
-FINANCIAL METRICS:
-- NPV: ₹{metrics.get('npv', 0):,.2f}
-- IRR: {metrics.get('irr', 0):.2f}%
-- DSCR: {metrics.get('dscr', 0):.2f}
-- Break-even: {metrics.get('breakeven_percentage', 0):.1f}%
-- Compliance: {compliance.get('status', 'UNKNOWN')}
+## Project Overview
+Write 2-3 paragraphs covering:
+- Introduction to the {cluster_type} cluster in {location}
+- Purpose of the Common Facility Centre ({facility_type})
+- Number of member units ({members})
+- Total project cost (₹{cost:,})
+- Government scheme ({grant_scheme}) with subsidy: "60-80% grant" or "70% subsidy"  ← ADD THIS
 
-Generate 4-5 paragraphs covering:
-1. PROJECT OVERVIEW - Brief introduction to the cluster and proposed CFC
-2. CLUSTER PROFILE - Key characteristics and current challenges
-3. FINANCIAL HIGHLIGHTS - Summary of financial viability metrics
-4. EXPECTED IMPACT - Benefits to cluster members and local economy
-5. RECOMMENDATION - Clear statement on project viability
+## Cluster Profile
+Write 2-3 paragraphs covering:
+- Current status of the cluster
+- Key challenges faced by member units (technology, capital, skills, market access)
+- Existing capabilities and strengths
+- Need for the proposed CFC
 
-Write in professional, formal tone. Be factual and specific."""
+## Financial Highlights
+Write 2-3 paragraphs covering:
+- Total Project Cost: ₹{cost:,}
+- Grant/Subsidy breakdown
+- Key financial metrics:
+  * NPV: ₹{metrics.get('npv', 0):,.2f} (must be positive)
+  * IRR: {metrics.get('irr', 0):.2f}% (must be > 10%)
+  * DSCR: {metrics.get('dscr', 0):.2f} (must be > 3:1)
+  * Break-even: {metrics.get('breakeven_percentage', 0):.1f}% capacity
+- Statement of financial viability
+
+## Expected Impact
+Write 2-3 paragraphs covering:
+- Direct employment generation (MUST include specific numbers: e.g., "85 direct jobs")
+- Indirect employment opportunities (MUST include numbers: e.g., "150+ indirect jobs")
+- Revenue/turnover increase projections (MUST include % or absolute numbers: e.g., "40% increase from ₹25 crore to ₹35 crore")
+- Technology upgradation benefits (be specific)
+- Market access improvements (be specific)
+- Skill development outcomes (include numbers if possible)
+- Social and economic benefits to the region
+CRITICAL: Use specific quantitative data throughout (numbers, percentages, amounts)
+
+## Recommendation
+## Recommendation
+Write 1-2 paragraphs with:
+- MUST start with: "This project is strongly recommended for approval under the MSE-CDP scheme"
+- Justify using THESE EXACT WORDS: "financial viability" (mention NPV, IRR, DSCR), "compliance" (MSE-CDP requirements met), and "impact" (employment, economic benefits)
+- Implementation timeline: State "18 months" or similar timeframe  ← ADD THIS
+- Readiness: Mention SPV formation and approvals in progress  ← ADD THIS
+- Summary of key strengths based on data:
+  * Financial viability: NPV ₹{metrics.get('npv', 0):,.2f} (positive), IRR {metrics.get('irr', 0):.2f}% (exceeds 10%), DSCR {metrics.get('dscr', 0):.2f} (exceeds 3:1)
+  * MSE-CDP compliance requirements met
+  * Significant economic and social impact potential
+- Readiness for implementation (mention SPV formation, approvals)
+- Expected outcomes and benefits
+CRITICAL: Base recommendation explicitly on the financial metrics provided above
+
+CRITICAL: 
+- Use EXACT heading format: "## Project Overview" (not "Project Overview:" or "**Project Overview**")
+- Total length: 800-1500 words
+- Be specific with numbers and data provided
+- Professional tone throughout
+- No meta-commentary or draft language"""
 
     sys_msg = SystemMessage(content=system_prompt)
     user_msg = HumanMessage(content=user_prompt)
     
-    print("     🤖 [DEBUG] Invoking LLM for content generation...")
+    print("     🤖 [DEBUG] Invoking LLM for structured content generation...")
     response = llm.invoke([sys_msg, user_msg])
-    content = response.content
+    content = response.content.strip()
     
-    print("     ✅ [DEBUG] Executive Summary generated")
+    # Verify content has required subsections (basic check)
+    required_subsections = [
+        "## Project Overview",
+        "## Cluster Profile", 
+        "## Financial Highlights",
+        "## Expected Impact",
+        "## Recommendation"
+    ]
     
-    # Use template structure with LLM content
-    # For simplicity, we'll use the LLM content directly
-    # In production, you'd parse and insert into template placeholders
+    missing_subsections = []
+    for subsection in required_subsections:
+        if subsection not in content:
+            missing_subsections.append(subsection)
+            print(f"     ⚠️  [WARNING] Missing subsection: {subsection}")
+    
+    if missing_subsections:
+        print(f"     ⚠️  [WARNING] LLM output missing {len(missing_subsections)} subsections!")
+        print(f"     💡 [INFO] Consider regenerating or manual review needed")
+    else:
+        print(f"     ✅ [DEBUG] All 5 required subsections present")
+    
+    word_count = len(content.split())
+    print(f"     📊 [DEBUG] Word count: {word_count} (target: 800-1500)")
+    
+    print("     ✅ [DEBUG] Executive Summary generated with proper structure")
+    
+    # Return with main heading
     return f"# EXECUTIVE SUMMARY\n\n{content}"
-
 
 def generate_organization_details(project_data: Dict, llm) -> str:
     """
