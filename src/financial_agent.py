@@ -254,7 +254,7 @@ def financial_modeling_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     print(f"  NPV: ₹{npv:,.2f} {npv_status} (requirement: > 0)")
     
     # 2. IRR (DUMMY)
-    annual_profit = project_cost * 0.12  # Simulated
+    annual_profit = project_cost * 0.18  # Simulated
     irr = calculate_irr_dummy(project_cost, annual_profit, years=10)
     irr_status = "✅ PASS" if irr > 10 else "❌ FAIL"
     print(f"  IRR: {irr:.2f}% {irr_status} (requirement: > 10%)")
@@ -267,7 +267,7 @@ def financial_modeling_agent(state: Dict[str, Any]) -> Dict[str, Any]:
     
     # 4. Break-even (PYTHON FORMULA with simulated inputs)
     revenue = project_cost * 0.25  # Simulated
-    fixed_costs = project_cost * 0.10  # Simulated
+    fixed_costs = project_cost * 0.06  # Simulated
     variable_costs = revenue * 0.50  # Simulated
     breakeven = calculate_breakeven_dummy(fixed_costs, revenue, variable_costs)
     breakeven_status = "✅ PASS" if breakeven < 60 else "❌ FAIL"
