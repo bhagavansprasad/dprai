@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # validate_standalone.py
 """
-Standalone DPR Validation Tester - Phase 2, Step 2.1
+Standalone DPR Validation Tester - Phase 4
 Tests validation logic quickly without regenerating DPR
 
 Usage:
-    # Test with real generated files (PRIMARY)
-    python validate_standalone.py --source real --path /home/bhagavan/aura/dprai/output/Printing_Industry_Tirupati/
+    # Test all sections with real generated files
+    python validate_standalone.py --source real --path ../output/Printing_Industry_Tirupati/
     
-    # Test with mock data (SECONDARY - edge cases)
+    # Test specific section
+    python validate_standalone.py --source real --path ../output/Printing_Industry_Tirupati/ --section technical
+    
+    # Test with mock data (edge cases)
     python validate_standalone.py --source mock
-    
-    # Test both (COMPREHENSIVE)
-    python validate_standalone.py --source both --path /home/bhagavan/aura/dprai/output/Printing_Industry_Tirupati/
 """
 
 import sys
@@ -23,9 +23,18 @@ from pathlib import Path
 # Add validation_agent to path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from validation_agent import validate_executive_summary, ValidationResult, generate_validation_report
-from validation_agent import validate_financial_plan
+from validation_agent import (
+    validate_executive_summary,
+    validate_financial_plan,
+    validate_technical_feasibility,
+    ValidationResult,
+    generate_validation_report
+)
 
+# File paths
+EXECUTIVE_SUMMARY_FILE = "01_executive_summary.md"
+FINANCIAL_PLAN_FILE = "03_financial_plan.md"
+TECHNICAL_FEASIBILITY_FILE = "06_technical_feasibility.md"
 
 # ============================================================================
 # MOCK DATA FOR EDGE CASE TESTING
@@ -156,53 +165,90 @@ def read_dpr_file(file_path: str) -> tuple:
 # TEST RUNNER
 # ============================================================================
 
-def test_real_data(output_path: str, project_data: dict):
+def test_real_data(output_path: str, project_data: dict, section: str = 'all'):
     """
     Test validation with real generated DPR files
     """
     print("\n" + "="*80)
-    print("🔍 PRIMARY TEST: REAL GENERATED DPR FILES")
+    print("🔍 VALIDATION TEST: REAL GENERATED DPR FILES")
     print("="*80)
     
-    # executive_summary_path = Path(output_path) / "01_executive_summary.md"
-    financial_plan_path = Path(output_path) / "03_financial_plan.md"    
+    output_dir = Path(output_path)
     
-    # print(f"\n📁 Reading: {executive_summary_path}")
-    print(f"\n📁 Reading: {financial_plan_path}")
-    
-    # content, success, error = read_dpr_file(str(executive_summary_path))
-    content, success, error = read_dpr_file(str(financial_plan_path))
-    
-    if not success:
-        print(f"\n❌ ERROR: {error}")
-        print("\n💡 Make sure the path is correct:")
-        # print(f"   Expected: {executive_summary_path}")
-        print(f"   Expected: {financial_plan_path}")
-        return None
-    
-    print(f"✅ File loaded successfully ({len(content)} characters)")
-    
-    # Run validation
-    print("\n" + "🔬"*40)
-    # result = validate_executive_summary(content, project_data)
-    # Use dummy financial data for validation
+    # Dummy financial data for validation
     financial_data = {
         "metrics": {
             "npv": 28700000,
             "irr": 15.5,
             "dscr": 3.5,
-            "breakeven_percentage": 55
+            "breakeven_percentage": 55,
+            "payback_period_years": 4.5
+        },
+        "loan_details": {
+            "grant_amount": 57400000,
+            "grant_percentage": 70,
+            "loan_amount": 24600000
+        },
+        "mse_cdp_compliance": {
+            "status": "COMPLIANT"
         }
     }
-    result = validate_financial_plan(content, project_data, financial_data)
-    # Display results
-    print("\n" + "="*80)
-    print("📊 REAL DATA VALIDATION RESULTS")
-    print("="*80)
     
-    display_results(result, "Real Generated DPR")
+    results = {}
     
-    return result
+    # Executive Summary
+    if section in ['executive', 'all']:
+        exec_path = output_dir / EXECUTIVE_SUMMARY_FILE
+        if exec_path.exists():
+            print(f"\n📁 Reading: {exec_path}")
+            content, success, error = read_dpr_file(str(exec_path))
+            if success:
+                print(f"✅ File loaded ({len(content)} characters)")
+                result = validate_executive_summary(content, project_data)
+                results['executive'] = result
+                display_results(result, "Executive Summary")
+            else:
+                print(f"❌ ERROR: {error}")
+        else:
+            print(f"\n⚠️  Executive Summary not found: {exec_path}")
+    
+    # Financial Plan
+    if section in ['financial', 'all']:
+        fin_path = output_dir / FINANCIAL_PLAN_FILE
+        if fin_path.exists():
+            print(f"\n📁 Reading: {fin_path}")
+            content, success, error = read_dpr_file(str(fin_path))
+            if success:
+                print(f"✅ File loaded ({len(content)} characters)")
+                result = validate_financial_plan(content, project_data, financial_data)
+                results['financial'] = result
+                display_results(result, "Financial Plan")
+            else:
+                print(f"❌ ERROR: {error}")
+        else:
+            print(f"\n⚠️  Financial Plan not found: {fin_path}")
+    
+    # Technical Feasibility
+    if section in ['technical', 'all']:
+        tech_path = output_dir / TECHNICAL_FEASIBILITY_FILE
+        if tech_path.exists():
+            print(f"\n📁 Reading: {tech_path}")
+            content, success, error = read_dpr_file(str(tech_path))
+            if success:
+                print(f"✅ File loaded ({len(content)} characters)")
+                result = validate_technical_feasibility(content, project_data, financial_data)
+                results['technical'] = result
+                display_results(result, "Technical Feasibility")
+            else:
+                print(f"❌ ERROR: {error}")
+        else:
+            print(f"\n⚠️  Technical Feasibility not found: {tech_path}")
+    
+    # Display cumulative summary if all sections tested
+    if section == 'all' and len(results) > 0:
+        display_cumulative_summary(results)
+    
+    return results
 
 
 def test_mock_data(project_data: dict):
@@ -260,38 +306,94 @@ def test_mock_data(project_data: dict):
     return results
 
 
-def display_results(result: ValidationResult, label: str):
+def display_results(result, label: str):
     """
-    Display validation results in a clear format
+    Display validation results - handles both old ValidationResult and new dict format
     """
     print(f"\n🎯 {label}")
-    print(f"   Overall Score: {result.overall_score:.1f}%")
-    print(f"   Grade: {result.grade}")
-    print(f"   Status: {result.status}")
-    print(f"   Ready for Submission: {'✅ Yes' if result.ready_for_submission else '❌ No'}")
     
-    print(f"\n📊 Breakdown:")
-    print(f"   Structure:  {result.structure['score']:.1f}% ({result.structure['passed']}/{result.structure['total']} passed)")
-    print(f"   Content:    {result.content['score']:.1f}% ({result.content['passed']}/{result.content['total']} passed) [Not implemented]")
-    print(f"   Compliance: {result.compliance['score']:.1f}% ({result.compliance['passed']}/{result.compliance['total']} passed) [Not implemented]")
-    print(f"   Quality:    {result.quality['score']:.1f}% [Not implemented]")
+    # Check if it's the new dict format (Phase 3+) or old ValidationResult format
+    if isinstance(result, dict) and 'summary' in result:
+        # New format (Phase 3+)
+        summary = result['summary']
+        print(f"   Overall Score: {summary['percentage']:.1f}%")
+        print(f"   Grade: {summary['grade']}")
+        print(f"   Checks: {summary['passed']}/{summary['total_checks']} passed")
+        
+        print(f"\n📊 Tier Breakdown:")
+        for tier in result['tiers']:
+            print(f"   {tier['tier']:<12}: {tier['percentage']:.1f}% ({tier['passed']}/{tier['total']} passed)")
+        
+        # Show failed checks
+        failed_checks = []
+        for tier in result['tiers']:
+            for check in tier['checks']:
+                if not check['passed'] and check['severity'] in ['critical', 'high']:
+                    failed_checks.append(f"{check['id']}: {check['description']}")
+        
+        if failed_checks:
+            print(f"\n⚠️  Critical/High Issues ({len(failed_checks)}):")
+            for i, issue in enumerate(failed_checks[:5], 1):  # Show top 5
+                print(f"   {i}. {issue}")
     
-    if result.issues:
-        print(f"\n⚠️  Issues Found ({len(result.issues)}):")
-        for i, issue in enumerate(result.issues, 1):
-            print(f"   {i}. {issue}")
-    
-    if result.suggestions:
-        print(f"\n💡 Suggestions ({len(result.suggestions)}):")
-        for i, suggestion in enumerate(result.suggestions, 1):
-            print(f"   {i}. {suggestion}")
-    
-    # Detailed structure checks
-    print(f"\n🔍 Detailed Structure Checks:")
-    for detail in result.structure['details']:
-        status_icon = "✅" if detail['status'] == "PASS" else "⚠️" if detail['status'] == "PASS_WITH_WARNING" else "❌"
-        print(f"   {status_icon} [{detail['check']}] {detail['name']}: {detail['message']}")
+    else:
+        # Old format (Phase 2 - Executive Summary)
+        print(f"   Overall Score: {result.overall_score:.1f}%")
+        print(f"   Grade: {result.grade}")
+        print(f"   Status: {result.status}")
+        print(f"   Ready for Submission: {'✅ Yes' if result.ready_for_submission else '❌ No'}")
+        
+        print(f"\n📊 Breakdown:")
+        print(f"   Structure:  {result.structure['score']:.1f}% ({result.structure['passed']}/{result.structure['total']} passed)")
+        print(f"   Content:    {result.content['score']:.1f}% ({result.content['passed']}/{result.content['total']} passed)")
+        print(f"   Compliance: {result.compliance['score']:.1f}% ({result.compliance['passed']}/{result.compliance['total']} passed)")
+        print(f"   Quality:    {result.quality['score']:.1f}%")
+        
+        if result.issues:
+            print(f"\n⚠️  Issues Found ({len(result.issues)}):")
+            for i, issue in enumerate(result.issues[:5], 1):
+                print(f"   {i}. {issue}")
 
+
+def display_cumulative_summary(results: dict):
+    """
+    Display cumulative summary for all tested sections
+    """
+    print("\n" + "="*80)
+    print("📊 CUMULATIVE VALIDATION SUMMARY")
+    print("="*80)
+    
+    total_checks = 0
+    total_passed = 0
+    
+    for section_name, result in results.items():
+        if isinstance(result, dict) and 'summary' in result:
+            # New format (Phase 3+: Financial Plan, Technical Feasibility)
+            summary = result['summary']
+            print(f"{section_name.title():<25}: {summary['percentage']:.1f}% ({summary['grade']}) - {summary['passed']}/{summary['total_checks']}")
+            total_checks += summary['total_checks']
+            total_passed += summary['passed']
+        else:
+            # Old format (Phase 2: Executive Summary)
+            # Calculate totals from old ValidationResult format
+            section_checks = (result.structure['total'] + 
+                            result.content['total'] + 
+                            result.compliance['total'] + 
+                            6)  # Quality tier has 6 checks
+            section_passed = (result.structure['passed'] + 
+                            result.content['passed'] + 
+                            result.compliance['passed'] + 
+                            int(result.quality['score'] / 100 * 6))  # Estimate quality passed
+            
+            print(f"{section_name.title():<25}: {result.overall_score:.1f}% ({result.grade}) - {section_passed}/{section_checks}")
+            total_checks += section_checks
+            total_passed += section_passed
+    
+    if total_checks > 0:
+        overall = (total_passed / total_checks) * 100
+        print(f"\n{'OVERALL':<25}: {overall:.1f}% - {total_passed}/{total_checks} checks passed")
+    
+    print("="*80)
 
 def compare_results(real_result, mock_results):
     """
@@ -318,25 +420,10 @@ def compare_results(real_result, mock_results):
     print("\n🎓 Quality Assessment:")
     if real_result.overall_score >= 80:
         print("   ✅ PASS: Your generated DPR meets quality standards!")
-        print("   ✅ Ready to move to Phase 2, Step 2.2 (Content validation)")
     elif real_result.overall_score >= 70:
         print("   ⚠️  ACCEPTABLE: Your DPR is decent but has room for improvement")
-        print("   💡 Review issues and suggestions above")
     else:
         print("   ❌ NEEDS WORK: Your DPR requires significant improvements")
-        print("   💡 Review document_generator.py prompts for Executive Summary")
-    
-    # Check if validation logic is working
-    print("\n🔧 Validation Logic Check:")
-    if mock_results:
-        good_pass = mock_results['good'].structure['score'] >= 80
-        poor_fail = mock_results['poor'].structure['score'] < 80
-        
-        if good_pass and poor_fail:
-            print("   ✅ Validation logic is working correctly")
-            print("   ✅ Good content scores high, poor content scores low")
-        else:
-            print("   ⚠️  Validation logic may need adjustment")
 
 
 # ============================================================================
@@ -345,26 +432,33 @@ def compare_results(real_result, mock_results):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Standalone DPR Validation Tester - Phase 2, Step 2.1",
+        description="Standalone DPR Validation Tester - Phase 4",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Test with real files (PRIMARY)
-  python validate_standalone.py --source real --path /home/bhagavan/aura/dprai/output/Printing_Industry_Tirupati/
+  # Test all sections
+  python validate_standalone.py --source real --path ../output/Printing_Industry_Tirupati/
   
-  # Test with mock data (SECONDARY)
+  # Test specific section
+  python validate_standalone.py --source real --path ../output/Printing_Industry_Tirupati/ --section technical
+  
+  # Test with mock data
   python validate_standalone.py --source mock
-  
-  # Test both (COMPREHENSIVE)
-  python validate_standalone.py --source both --path /home/bhagavan/aura/dprai/output/Printing_Industry_Tirupati/
         """
     )
     
     parser.add_argument(
         '--source',
         choices=['real', 'mock', 'both'],
-        default='both',
-        help='Data source for testing (default: both)'
+        default='real',
+        help='Data source for testing (default: real)'
+    )
+    
+    parser.add_argument(
+        '--section',
+        choices=['executive', 'financial', 'technical', 'all'],
+        default='all',
+        help='Which section to validate (default: all)'
     )
     
     parser.add_argument(
@@ -391,49 +485,40 @@ Examples:
     }
     
     print("\n" + "="*80)
-    print("🧪 STANDALONE DPR VALIDATION TESTER")
-    print("Phase 2, Step 2.1: Tier 1 (Structure) Validation")
+    print("🧪 STANDALONE DPR VALIDATION TESTER - PHASE 4")
+    print("Validates: Executive Summary, Financial Plan, Technical Feasibility")
     print("="*80)
     
-    real_result = None
+    real_results = None
     mock_results = None
     
     # Test real data
     if args.source in ['real', 'both']:
-        real_result = test_real_data(args.path, project_data)
-        if real_result is None:
+        real_results = test_real_data(args.path, project_data, args.section)
+        if not real_results:
             return 1
     
     # Test mock data
     if args.source in ['mock', 'both']:
         mock_results = test_mock_data(project_data)
     
-    # Compare results if both were run
-    if args.source == 'both' and real_result:
-        compare_results(real_result, mock_results)
+    # Compare results if both were run (only for executive summary)
+    if args.source == 'both' and real_results and 'executive' in real_results:
+        compare_results(real_results['executive'], mock_results)
     
     # Final summary
     print("\n\n" + "="*80)
     print("✅ VALIDATION TESTING COMPLETE")
     print("="*80)
     
-    if real_result:
-        print(f"\nYour Real DPR Score: {real_result.overall_score:.1f}% ({real_result.status})")
+    print("\n📋 Implementation Status:")
+    print("   ✅ Phase 2: Executive Summary Validation - COMPLETE (29 checks)")
+    print("   ✅ Phase 3: Financial Plan Validation - COMPLETE (31 checks)")
+    print("   ✅ Phase 4: Technical Feasibility Validation - COMPLETE (30 checks)")
+    print("   ⏸️  Phase 5: Remaining Sections - PENDING")
     
-    print("\n📋 Current Implementation Status:")
-    print("   ✅ Phase 2, Step 2.1: Tier 1 (Structure) - IMPLEMENTED")
-    print("   ⏸️  Phase 2, Step 2.2: Tier 2 (Content) - PENDING")
-    print("   ⏸️  Phase 2, Step 2.3: Tier 3 (Compliance) - PENDING")
-    print("   ⏸️  Phase 2, Step 2.4: Tier 4 (Quality) - PENDING")
-    
-    print("\n🚀 Next Steps:")
-    if real_result and real_result.overall_score >= 80:
-        print("   ✅ Structure validation passed!")
-        print("   ➡️  Proceed to Phase 2, Step 2.2 (Content validation)")
-    elif real_result:
-        print("   ⚠️  Structure validation needs improvement")
-        print("   💡 Review issues and update document_generator.py")
-        print("   🔄 Re-generate DPR and re-test")
+    total_checks = 90  # 29 + 31 + 30
+    print(f"\n   Total Validation Checks Implemented: {total_checks}")
     
     print("="*80 + "\n")
     

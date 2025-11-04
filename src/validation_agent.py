@@ -22,6 +22,7 @@ Last Updated: October 31, 2025
 import re
 import json
 from typing import Dict, Any, List, Tuple
+from typing import Optional
 from termcolor import cprint
 
 from langchain_google_vertexai import ChatVertexAI
@@ -29,6 +30,29 @@ from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from config import LLM_MODEL
 
 
+def get_grade(percentage: float) -> str:
+    """
+    Convert percentage to letter grade
+    """
+    if percentage >= 95:
+        return "A+"
+    elif percentage >= 90:
+        return "A"
+    elif percentage >= 85:
+        return "A-"
+    elif percentage >= 80:
+        return "B+"
+    elif percentage >= 75:
+        return "B"
+    elif percentage >= 70:
+        return "B-"
+    elif percentage >= 65:
+        return "C+"
+    elif percentage >= 60:
+        return "C"
+    else:
+        return "F"
+    
 # ============================================================================
 # VALIDATION RESULT DATA STRUCTURE
 # ============================================================================
@@ -1564,6 +1588,438 @@ def validate_financial_plan_content(content: str, project_data: Dict[str, Any], 
     print("="*80)
     
     return results
+
+# ============================================================================
+# PHASE 4: TECHNICAL FEASIBILITY VALIDATION
+# ============================================================================
+
+def validate_technical_feasibility_structure(content: str, project_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Tier 1: Structure validation for Technical Feasibility (9 checks)
+    """
+    checks = []
+    
+    # S3.1: Main heading present
+    has_main_heading = bool(re.search(r'#\s*TECHNICAL\s+FEASIBILITY', content, re.IGNORECASE))
+    checks.append({
+        "id": "S3.1",
+        "description": "Main heading 'TECHNICAL FEASIBILITY' present",
+        "passed": has_main_heading,
+        "severity": "critical"
+    })
+    
+    # S3.2: Word count (800-2000 words)
+    word_count = len(content.split())
+    word_count_ok = 800 <= word_count <= 2000
+    checks.append({
+        "id": "S3.2",
+        "description": f"Word count 800-2000 words (found: {word_count})",
+        "passed": word_count_ok,
+        "severity": "high"
+    })
+    
+    # S3.3: At least 5 subsections
+    subsections = re.findall(r'\*\*\d+\.\s+[A-Z]', content)
+    subsection_count = len(subsections)
+    has_subsections = subsection_count >= 5
+    checks.append({
+        "id": "S3.3",
+        "description": f"At least 5 subsections (found: {subsection_count})",
+        "passed": has_subsections,
+        "severity": "high"
+    })
+    
+    # S3.4: Technology/Equipment section
+    has_technology = bool(re.search(r'TECHNOLOGY|EQUIPMENT|MACHINERY', content, re.IGNORECASE))
+    checks.append({
+        "id": "S3.4",
+        "description": "Technology/Equipment section present",
+        "passed": has_technology,
+        "severity": "critical"
+    })
+    
+    # S3.5: Process/Capacity section
+    has_process = bool(re.search(r'PROCESS|CAPACITY|PRODUCTION', content, re.IGNORECASE))
+    checks.append({
+        "id": "S3.5",
+        "description": "Process/Capacity section present",
+        "passed": has_process,
+        "severity": "high"
+    })
+    
+    # S3.6: Specifications/Standards section
+    has_specs = bool(re.search(r'SPECIFICATION|STANDARD|QUALITY', content, re.IGNORECASE))
+    checks.append({
+        "id": "S3.6",
+        "description": "Specifications/Standards section present",
+        "passed": has_specs,
+        "severity": "high"
+    })
+    
+    # S3.7: Tables or structured data
+    has_tables = bool(re.search(r'\|.*\|.*\|', content)) or bool(re.search(r':\s*\(a\)|\(b\)|\(c\)', content))
+    checks.append({
+        "id": "S3.7",
+        "description": "Tables or structured data present",
+        "passed": has_tables,
+        "severity": "medium"
+    })
+    
+    # S3.8: Proper heading hierarchy
+    h1_count = len(re.findall(r'^#\s+', content, re.MULTILINE))
+    h2_count = len(re.findall(r'^##\s+', content, re.MULTILINE))
+    proper_hierarchy = h1_count >= 1 and (h2_count >= 3 or subsection_count >= 5)
+    checks.append({
+        "id": "S3.8",
+        "description": "Proper heading hierarchy (H1 + subsections)",
+        "passed": proper_hierarchy,
+        "severity": "medium"
+    })
+    
+    # S3.9: Introduction paragraph
+    lines = content.split('\n')
+    intro_found = False
+    for i, line in enumerate(lines):
+        if re.search(r'#\s*TECHNICAL\s+FEASIBILITY', line, re.IGNORECASE):
+            if i + 1 < len(lines) and len(lines[i+1].strip()) > 50:
+                intro_found = True
+                break
+    checks.append({
+        "id": "S3.9",
+        "description": "Introduction paragraph after main heading",
+        "passed": intro_found,
+        "severity": "medium"
+    })
+    
+    passed_count = sum(1 for c in checks if c["passed"])
+    return {
+        "tier": "Structure",
+        "checks": checks,
+        "passed": passed_count,
+        "total": len(checks),
+        "percentage": (passed_count / len(checks)) * 100
+    }
+
+
+def validate_technical_feasibility_content(content: str, project_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Tier 2: Content validation for Technical Feasibility (7 checks)
+    """
+    checks = []
+
+    # C3.1: Technology description (>200 words)
+    # Match from "**1. TECHNOLOGY" until next "**2." or "**3." section
+    tech_section = re.search(r'\*\*1\.\s*TECHNOLOGY[^\*]*\*\*.*?(?=\*\*[2-9]\.|\Z)', content, re.IGNORECASE | re.DOTALL)
+    if tech_section:
+        # Extract just the content (remove heading)
+        tech_content = re.sub(r'\*\*1\.\s*TECHNOLOGY[^\*]*\*\*\s*', '', tech_section.group(0))
+        tech_words = len(tech_content.split())
+    else:
+        tech_words = 0
+        
+    tech_adequate = tech_words > 200
+    checks.append({
+        "id": "C3.1",
+        "description": f"Technology description >200 words (found: {tech_words})",
+        "passed": tech_adequate,
+        "severity": "high"
+    })
+    
+    # C3.2: Equipment specifications with models
+    has_models = bool(re.search(r'[A-Z][a-z]+\s+[A-Z0-9\-]+|HP\s+|Xerox|Canon|Epson|Mimaki', content))
+    checks.append({
+        "id": "C3.2",
+        "description": "Equipment specifications with brand/model names",
+        "passed": has_models,
+        "severity": "high"
+    })
+    
+    # C3.3: Production process described
+    process_keywords = ['process', 'workflow', 'procedure', 'operation', 'step']
+    has_process = any(kw in content.lower() for kw in process_keywords)
+    checks.append({
+        "id": "C3.3",
+        "description": "Production process described",
+        "passed": has_process,
+        "severity": "high"
+    })
+    
+    # C3.4: Capacity analysis with numbers
+    has_capacity_numbers = bool(re.search(r'\d+(?:,\d+)*\s*(?:impressions|units|pieces|sq\.?\s*m|meters)', content, re.IGNORECASE))
+    checks.append({
+        "id": "C3.4",
+        "description": "Capacity analysis with quantitative data",
+        "passed": has_capacity_numbers,
+        "severity": "high"
+    })
+    
+    # C3.5: Technical standards mentioned
+    standards_keywords = ['standard', 'ISO', 'quality', 'specification', 'dpi', 'resolution']
+    has_standards = any(kw in content.lower() for kw in standards_keywords)
+    checks.append({
+        "id": "C3.5",
+        "description": "Technical standards/specifications mentioned",
+        "passed": has_standards,
+        "severity": "medium"
+    })
+    
+    # C3.6: Training/manpower requirements
+    training_keywords = ['training', 'manpower', 'personnel', 'operator', 'staff', 'skill']
+    has_training = any(kw in content.lower() for kw in training_keywords)
+    checks.append({
+        "id": "C3.6",
+        "description": "Training/manpower requirements included",
+        "passed": has_training,
+        "severity": "medium"
+    })
+    
+    # C3.7: Content specific to cluster
+    cluster_type = project_data.get('cluster_type', '')
+    cluster_mentioned = cluster_type.lower() in content.lower() if cluster_type else False
+    checks.append({
+        "id": "C3.7",
+        "description": f"Content specific to {cluster_type} cluster",
+        "passed": cluster_mentioned,
+        "severity": "medium"
+    })
+    
+    passed_count = sum(1 for c in checks if c["passed"])
+    return {
+        "tier": "Content",
+        "checks": checks,
+        "passed": passed_count,
+        "total": len(checks),
+        "percentage": (passed_count / len(checks)) * 100
+    }
+
+
+def validate_technical_feasibility_compliance(content: str, project_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Tier 3: MSE-CDP Compliance validation for Technical Feasibility (8 checks)
+    """
+    checks = []
+    
+    # CP3.1: Technology overview present
+    has_tech_overview = bool(re.search(r'TECHNOLOGY\s+OVERVIEW|technology.*overview', content, re.IGNORECASE))
+    checks.append({
+        "id": "CP3.1",
+        "description": "Technology overview section present (MSE-CDP requirement)",
+        "passed": has_tech_overview,
+        "severity": "high"
+    })
+    
+    # CP3.2: Equipment/machinery details
+    equipment_indicators = ['equipment', 'machinery', 'printer', 'machine', 'system']
+    has_equipment = sum(1 for kw in equipment_indicators if kw in content.lower()) >= 3
+    checks.append({
+        "id": "CP3.2",
+        "description": "Equipment/machinery details adequate",
+        "passed": has_equipment,
+        "severity": "critical"
+    })
+    
+    # CP3.3: Utilities mentioned (Power/Water)
+    utilities = ['power', 'electricity', 'water', 'utility']
+    has_utilities = any(u in content.lower() for u in utilities)
+    checks.append({
+        "id": "CP3.3",
+        "description": "Utilities (Power/Water) mentioned",
+        "passed": has_utilities,
+        "severity": "medium"
+    })
+    
+    # CP3.4: Manpower/staffing included
+    manpower_terms = ['manpower', 'staff', 'operator', 'personnel', 'employee']
+    has_manpower = any(m in content.lower() for m in manpower_terms)
+    checks.append({
+        "id": "CP3.4",
+        "description": "Manpower/staffing requirements included",
+        "passed": has_manpower,
+        "severity": "medium"
+    })
+    
+    # CP3.5: Raw materials mentioned
+    materials_mentioned = bool(re.search(r'raw material|substrate|ink|toner|paper|material', content, re.IGNORECASE))
+    checks.append({
+        "id": "CP3.5",
+        "description": "Raw materials/inputs mentioned",
+        "passed": materials_mentioned,
+        "severity": "medium"
+    })
+    
+    # CP3.6: Quality/safety standards
+    quality_safety = ['quality', 'safety', 'standard', 'certification', 'compliance']
+    has_quality = any(q in content.lower() for q in quality_safety)
+    checks.append({
+        "id": "CP3.6",
+        "description": "Quality/safety standards mentioned",
+        "passed": has_quality,
+        "severity": "medium"
+    })
+    
+    # CP3.7: Environmental considerations
+    environmental = ['environmental', 'emission', 'waste', 'disposal', 'pollution']
+    has_environmental = any(e in content.lower() for e in environmental)
+    checks.append({
+        "id": "CP3.7",
+        "description": "Environmental considerations mentioned",
+        "passed": has_environmental,
+        "severity": "low"
+    })
+    
+    # CP3.8: Implementation feasibility stated
+    feasibility_terms = ['feasibl', 'viable', 'capable', 'suitable', 'appropriate']
+    has_feasibility = any(f in content.lower() for f in feasibility_terms)
+    checks.append({
+        "id": "CP3.8",
+        "description": "Technical feasibility explicitly stated",
+        "passed": has_feasibility,
+        "severity": "high"
+    })
+    
+    passed_count = sum(1 for c in checks if c["passed"])
+    return {
+        "tier": "Compliance",
+        "checks": checks,
+        "passed": passed_count,
+        "total": len(checks),
+        "percentage": (passed_count / len(checks)) * 100
+    }
+
+
+def validate_technical_feasibility_quality(content: str, project_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Tier 4: Quality validation for Technical Feasibility (6 checks)
+    """
+    checks = []
+    
+    # Q3.1: Technical terminology consistency
+    tech_terms = re.findall(r'\b(?:dpi|resolution|capacity|gsm|mm|meters|impressions)\b', content, re.IGNORECASE)
+    consistent_terms = len(tech_terms) >= 5
+    checks.append({
+        "id": "Q3.1",
+        "description": f"Technical terminology used consistently (found {len(tech_terms)} terms)",
+        "passed": consistent_terms,
+        "severity": "medium"
+    })
+    
+    # Q3.2: Specific equipment models/brands
+    brands = re.findall(r'\b(?:HP|Xerox|Canon|Epson|Mimaki|Kongsberg|Polar|Ricoh|Konica)\b', content)
+    has_specific_brands = len(brands) >= 2
+    checks.append({
+        "id": "Q3.2",
+        "description": f"Specific equipment brands/models mentioned (found {len(brands)})",
+        "passed": has_specific_brands,
+        "severity": "high"
+    })
+    
+    # Q3.3: Quantitative data (capacity, specs)
+    numbers = re.findall(r'\d+(?:,\d+)*(?:\.\d+)?', content)
+    has_quantitative = len(numbers) >= 10
+    checks.append({
+        "id": "Q3.3",
+        "description": f"Adequate quantitative data (found {len(numbers)} numbers)",
+        "passed": has_quantitative,
+        "severity": "medium"
+    })
+    
+    # Q3.4: Readability (15-35 words per sentence)
+    sentences = re.split(r'[.!?]+', content)
+    sentence_lengths = [len(s.split()) for s in sentences if len(s.strip()) > 10]
+    if sentence_lengths:
+        avg_length = sum(sentence_lengths) / len(sentence_lengths)
+        readable = 15 <= avg_length <= 35
+    else:
+        readable = False
+    checks.append({
+        "id": "Q3.4",
+        "description": f"Readable sentence length (avg: {avg_length:.1f} words/sentence)",
+        "passed": readable,
+        "severity": "low"
+    })
+    
+    # Q3.5: Professional technical tone
+    technical_indicators = ['specifications', 'capacity', 'performance', 'system', 'equipment', 'process']
+    tech_count = sum(1 for t in technical_indicators if t in content.lower())
+    professional_tone = tech_count >= 4
+    checks.append({
+        "id": "Q3.5",
+        "description": "Professional technical tone maintained",
+        "passed": professional_tone,
+        "severity": "medium"
+    })
+    
+    # Q3.6: Logical flow (sections in reasonable order)
+    section_order_patterns = [
+        r'TECHNOLOGY.*EQUIPMENT.*PROCESS',
+        r'OVERVIEW.*EQUIPMENT.*CAPACITY',
+        r'TECHNOLOGY.*PROCESS.*TRAINING'
+    ]
+    logical_flow = any(re.search(pattern, content, re.IGNORECASE | re.DOTALL) for pattern in section_order_patterns)
+    checks.append({
+        "id": "Q3.6",
+        "description": "Logical section flow (Technology → Equipment → Process)",
+        "passed": logical_flow,
+        "severity": "low"
+    })
+    
+    passed_count = sum(1 for c in checks if c["passed"])
+    return {
+        "tier": "Quality",
+        "checks": checks,
+        "passed": passed_count,
+        "total": len(checks),
+        "percentage": (passed_count / len(checks)) * 100
+    }
+
+
+def validate_technical_feasibility(content: str, project_data: Dict[str, Any], 
+                                   financial_data: Optional[Dict[str, Any]] = None):
+    """
+    Master validation function for Technical Feasibility section
+    Runs all 4 tiers: Structure, Content, Compliance, Quality
+    Total: 30 checks
+    """
+    print("\n" + "="*80)
+    print("VALIDATING: TECHNICAL FEASIBILITY (Phase 4)")
+    print("="*80)
+    
+    # Run all tier validations
+    tier1 = validate_technical_feasibility_structure(content, project_data)
+    tier2 = validate_technical_feasibility_content(content, project_data)
+    tier3 = validate_technical_feasibility_compliance(content, project_data)
+    tier4 = validate_technical_feasibility_quality(content, project_data)
+    
+    # Aggregate results
+    all_tiers = [tier1, tier2, tier3, tier4]
+    total_checks = sum(t["total"] for t in all_tiers)
+    total_passed = sum(t["passed"] for t in all_tiers)
+    overall_percentage = (total_passed / total_checks) * 100
+    
+    # Determine grade
+    grade = get_grade(overall_percentage)
+    
+    result = {
+        "section": "Technical Feasibility",
+        "tiers": all_tiers,
+        "summary": {
+            "total_checks": total_checks,
+            "passed": total_passed,
+            "failed": total_checks - total_passed,
+            "percentage": overall_percentage,
+            "grade": grade
+        }
+    }
+    
+    # Print summary
+    print(f"\nTier 1 - Structure:   {tier1['passed']}/{tier1['total']} ({tier1['percentage']:.1f}%)")
+    print(f"Tier 2 - Content:     {tier2['passed']}/{tier2['total']} ({tier2['percentage']:.1f}%)")
+    print(f"Tier 3 - Compliance:  {tier3['passed']}/{tier3['total']} ({tier3['percentage']:.1f}%)")
+    print(f"Tier 4 - Quality:     {tier4['passed']}/{tier4['total']} ({tier4['percentage']:.1f}%)")
+    print(f"\nOVERALL: {total_passed}/{total_checks} ({overall_percentage:.1f}%) - Grade {grade}")
+    print("="*80)
+    
+    return result
 
 def validate_financial_plan_compliance(content: str, project_data: Dict[str, Any], financial_data: Dict[str, Any]) -> Dict[str, Any]:
     """
