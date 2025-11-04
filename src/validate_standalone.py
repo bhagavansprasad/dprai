@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # validate_standalone.py
 """
-Standalone DPR Validation Tester - Phase 4
+Standalone DPR Validation Tester - Phase 5
 Tests validation logic quickly without regenerating DPR
 
 Usage:
@@ -9,7 +9,7 @@ Usage:
     python validate_standalone.py --source real --path ../output/Printing_Industry_Tirupati/
     
     # Test specific section
-    python validate_standalone.py --source real --path ../output/Printing_Industry_Tirupati/ --section technical
+    python validate_standalone.py --source real --path ../output/Printing_Industry_Tirupati/ --section market
     
     # Test with mock data (edge cases)
     python validate_standalone.py --source mock
@@ -27,6 +27,7 @@ from validation_agent import (
     validate_executive_summary,
     validate_financial_plan,
     validate_technical_feasibility,
+    validate_market_analysis,
     ValidationResult,
     generate_validation_report
 )
@@ -35,6 +36,7 @@ from validation_agent import (
 EXECUTIVE_SUMMARY_FILE = "01_executive_summary.md"
 FINANCIAL_PLAN_FILE = "03_financial_plan.md"
 TECHNICAL_FEASIBILITY_FILE = "06_technical_feasibility.md"
+MARKET_ANALYSIS_FILE = "07_market_analysis.md"
 
 # ============================================================================
 # MOCK DATA FOR EDGE CASE TESTING
@@ -244,6 +246,22 @@ def test_real_data(output_path: str, project_data: dict, section: str = 'all'):
         else:
             print(f"\n⚠️  Technical Feasibility not found: {tech_path}")
     
+    # Market Analysis
+    if section in ['market', 'all']:
+        market_path = output_dir / MARKET_ANALYSIS_FILE
+        if market_path.exists():
+            print(f"\n📁 Reading: {market_path}")
+            content, success, error = read_dpr_file(str(market_path))
+            if success:
+                print(f"✅ File loaded ({len(content)} characters)")
+                result = validate_market_analysis(content, project_data, financial_data)
+                results['market'] = result
+                display_results(result, "Market Analysis")
+            else:
+                print(f"❌ ERROR: {error}")
+        else:
+            print(f"\n⚠️  Market Analysis not found: {market_path}")
+    
     # Display cumulative summary if all sections tested
     if section == 'all' and len(results) > 0:
         display_cumulative_summary(results)
@@ -368,7 +386,7 @@ def display_cumulative_summary(results: dict):
     
     for section_name, result in results.items():
         if isinstance(result, dict) and 'summary' in result:
-            # New format (Phase 3+: Financial Plan, Technical Feasibility)
+            # New format (Phase 3+: Financial Plan, Technical Feasibility, Market Analysis)
             summary = result['summary']
             print(f"{section_name.title():<25}: {summary['percentage']:.1f}% ({summary['grade']}) - {summary['passed']}/{summary['total_checks']}")
             total_checks += summary['total_checks']
@@ -394,6 +412,7 @@ def display_cumulative_summary(results: dict):
         print(f"\n{'OVERALL':<25}: {overall:.1f}% - {total_passed}/{total_checks} checks passed")
     
     print("="*80)
+
 
 def compare_results(real_result, mock_results):
     """
@@ -432,7 +451,7 @@ def compare_results(real_result, mock_results):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Standalone DPR Validation Tester - Phase 4",
+        description="Standalone DPR Validation Tester - Phase 5",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -440,7 +459,7 @@ Examples:
   python validate_standalone.py --source real --path ../output/Printing_Industry_Tirupati/
   
   # Test specific section
-  python validate_standalone.py --source real --path ../output/Printing_Industry_Tirupati/ --section technical
+  python validate_standalone.py --source real --path ../output/Printing_Industry_Tirupati/ --section market
   
   # Test with mock data
   python validate_standalone.py --source mock
@@ -456,7 +475,7 @@ Examples:
     
     parser.add_argument(
         '--section',
-        choices=['executive', 'financial', 'technical', 'all'],
+        choices=['executive', 'financial', 'technical', 'market', 'all'],
         default='all',
         help='Which section to validate (default: all)'
     )
@@ -485,8 +504,8 @@ Examples:
     }
     
     print("\n" + "="*80)
-    print("🧪 STANDALONE DPR VALIDATION TESTER - PHASE 4")
-    print("Validates: Executive Summary, Financial Plan, Technical Feasibility")
+    print("🧪 STANDALONE DPR VALIDATION TESTER - PHASE 5")
+    print("Validates: Executive Summary, Financial Plan, Technical Feasibility, Market Analysis")
     print("="*80)
     
     real_results = None
@@ -515,9 +534,10 @@ Examples:
     print("   ✅ Phase 2: Executive Summary Validation - COMPLETE (29 checks)")
     print("   ✅ Phase 3: Financial Plan Validation - COMPLETE (31 checks)")
     print("   ✅ Phase 4: Technical Feasibility Validation - COMPLETE (30 checks)")
-    print("   ⏸️  Phase 5: Remaining Sections - PENDING")
+    print("   ✅ Phase 5: Market Analysis Validation - COMPLETE (30 checks)")
+    print("   ⏸️  Phase 6+: Remaining Sections - PENDING")
     
-    total_checks = 90  # 29 + 31 + 30
+    total_checks = 120  # 29 + 31 + 30 + 30
     print(f"\n   Total Validation Checks Implemented: {total_checks}")
     
     print("="*80 + "\n")
@@ -527,3 +547,4 @@ Examples:
 
 if __name__ == "__main__":
     sys.exit(main())
+    

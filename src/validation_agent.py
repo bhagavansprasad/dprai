@@ -2021,6 +2021,435 @@ def validate_technical_feasibility(content: str, project_data: Dict[str, Any],
     
     return result
 
+# ============================================================================
+# PHASE 5: MARKET ANALYSIS VALIDATION
+# ============================================================================
+
+def validate_market_analysis_structure(content: str, project_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Tier 1: Structure validation for Market Analysis (9 checks)
+    """
+    checks = []
+    
+    # S4.1: Main heading present
+    has_main_heading = bool(re.search(r'#\s*MARKET\s+ANALYSIS', content, re.IGNORECASE))
+    checks.append({
+        "id": "S4.1",
+        "description": "Main heading 'MARKET ANALYSIS' present",
+        "passed": has_main_heading,
+        "severity": "critical"
+    })
+    
+    # S4.2: Word count (800-1800 words)
+    word_count = len(content.split())
+    word_count_ok = 800 <= word_count <= 1800
+    checks.append({
+        "id": "S4.2",
+        "description": f"Word count 800-1800 words (found: {word_count})",
+        "passed": word_count_ok,
+        "severity": "high"
+    })
+    
+    # S4.3: At least 4 subsections
+    subsections = re.findall(r'\*\*\d+\.\s+[A-Z]', content)
+    subsection_count = len(subsections)
+    has_subsections = subsection_count >= 4
+    checks.append({
+        "id": "S4.3",
+        "description": f"At least 4 subsections (found: {subsection_count})",
+        "passed": has_subsections,
+        "severity": "high"
+    })
+    
+    # S4.4: Market size/trends section
+    has_market_size = bool(re.search(r'MARKET\s+SIZE|MARKET\s+TREND|INDUSTRY\s+OVERVIEW', content, re.IGNORECASE))
+    checks.append({
+        "id": "S4.4",
+        "description": "Market Size/Trends section present",
+        "passed": has_market_size,
+        "severity": "critical"
+    })
+    
+    # S4.5: Target market section
+    has_target_market = bool(re.search(r'TARGET\s+MARKET|MARKET\s+SEGMENT|CUSTOMER\s+SEGMENT', content, re.IGNORECASE))
+    checks.append({
+        "id": "S4.5",
+        "description": "Target Market section present",
+        "passed": has_target_market,
+        "severity": "high"
+    })
+    
+    # S4.6: Competition analysis section
+    has_competition = bool(re.search(r'COMPETITION|COMPETITIVE|COMPETITOR', content, re.IGNORECASE))
+    checks.append({
+        "id": "S4.6",
+        "description": "Competition Analysis section present",
+        "passed": has_competition,
+        "severity": "high"
+    })
+    
+    # S4.7: Demand projections section
+    has_demand = bool(re.search(r'DEMAND\s+PROJECTION|FORECAST|MARKET\s+POTENTIAL', content, re.IGNORECASE))
+    checks.append({
+        "id": "S4.7",
+        "description": "Demand Projections section present",
+        "passed": has_demand,
+        "severity": "high"
+    })
+    
+    # S4.8: Tables or structured data
+    has_tables = bool(re.search(r'\|.*\|.*\|', content)) or bool(re.search(r':\s*\(a\)|\(b\)|\(c\)', content))
+    checks.append({
+        "id": "S4.8",
+        "description": "Tables or structured data present",
+        "passed": has_tables,
+        "severity": "medium"
+    })
+    
+    # S4.9: Proper heading hierarchy
+    h1_count = len(re.findall(r'^#\s+', content, re.MULTILINE))
+    h2_count = len(re.findall(r'^##\s+', content, re.MULTILINE))
+    proper_hierarchy = h1_count >= 1 and (h2_count >= 2 or subsection_count >= 4)
+    checks.append({
+        "id": "S4.9",
+        "description": "Proper heading hierarchy (H1 + subsections)",
+        "passed": proper_hierarchy,
+        "severity": "medium"
+    })
+    
+    passed_count = sum(1 for c in checks if c["passed"])
+    return {
+        "tier": "Structure",
+        "checks": checks,
+        "passed": passed_count,
+        "total": len(checks),
+        "percentage": (passed_count / len(checks)) * 100
+    }
+
+
+def validate_market_analysis_content(content: str, project_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Tier 2: Content validation for Market Analysis (7 checks)
+    """
+    checks = []
+    
+    # C4.1: Industry overview depth (>150 words)
+    market_section = re.search(r'\*\*1\.\s*MARKET[^\*]*\*\*.*?(?=\*\*[2-9]\.|\Z)', content, re.IGNORECASE | re.DOTALL)
+    if market_section:
+        market_content = re.sub(r'\*\*1\.\s*MARKET[^\*]*\*\*\s*', '', market_section.group(0))
+        market_words = len(market_content.split())
+    else:
+        market_words = 0
+    market_adequate = market_words > 150
+    checks.append({
+        "id": "C4.1",
+        "description": f"Industry overview depth >150 words (found: {market_words})",
+        "passed": market_adequate,
+        "severity": "high"
+    })
+    
+    # C4.2: Market size with quantitative data
+    has_market_numbers = bool(re.search(r'₹|INR|Rs\.?\s*\d+|crore|lakh|million|billion', content, re.IGNORECASE))
+    checks.append({
+        "id": "C4.2",
+        "description": "Market size with quantitative data (currency amounts)",
+        "passed": has_market_numbers,
+        "severity": "high"
+    })
+    
+    # C4.3: Target market specificity (segments identified)
+    segments = re.findall(r'\(a\)|\(b\)|\(c\)|\(d\)|B2B|B2C|segment', content, re.IGNORECASE)
+    has_segments = len(segments) >= 3
+    checks.append({
+        "id": "C4.3",
+        "description": f"Target market segments identified (found: {len(segments)})",
+        "passed": has_segments,
+        "severity": "high"
+    })
+    
+    # C4.4: Competitor identification
+    competition_keywords = ['competitor', 'competition', 'competitive', 'player', 'rival']
+    has_competitors = any(kw in content.lower() for kw in competition_keywords)
+    checks.append({
+        "id": "C4.4",
+        "description": "Competitors/competition mentioned",
+        "passed": has_competitors,
+        "severity": "high"
+    })
+    
+    # C4.5: Demand projections with numbers
+    has_projections = bool(re.search(r'\d+\s*(?:year|crore|lakh|%|percent)', content, re.IGNORECASE))
+    checks.append({
+        "id": "C4.5",
+        "description": "Demand projections with quantitative data",
+        "passed": has_projections,
+        "severity": "high"
+    })
+    
+    # C4.6: Growth rates/trends mentioned
+    has_growth = bool(re.search(r'growth|CAGR|trend|increase|expand|rising', content, re.IGNORECASE))
+    checks.append({
+        "id": "C4.6",
+        "description": "Growth rates/trends mentioned",
+        "passed": has_growth,
+        "severity": "medium"
+    })
+    
+    # C4.7: Content specific to cluster/location
+    cluster_type = project_data.get('cluster_type', '')
+    location = project_data.get('location', '')
+    cluster_mentioned = cluster_type.lower() in content.lower() if cluster_type else False
+    location_mentioned = location.split(',')[0].lower() in content.lower() if location else False
+    specific_content = cluster_mentioned or location_mentioned
+    checks.append({
+        "id": "C4.7",
+        "description": f"Content specific to {cluster_type} in {location}",
+        "passed": specific_content,
+        "severity": "medium"
+    })
+    
+    passed_count = sum(1 for c in checks if c["passed"])
+    return {
+        "tier": "Content",
+        "checks": checks,
+        "passed": passed_count,
+        "total": len(checks),
+        "percentage": (passed_count / len(checks)) * 100
+    }
+
+
+def validate_market_analysis_compliance(content: str, project_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Tier 3: MSE-CDP Compliance validation for Market Analysis (8 checks)
+    """
+    checks = []
+    
+    # CP4.1: Market opportunity stated
+    opportunity_keywords = ['opportunity', 'potential', 'scope', 'growth prospect']
+    has_opportunity = any(kw in content.lower() for kw in opportunity_keywords)
+    checks.append({
+        "id": "CP4.1",
+        "description": "Market opportunity clearly stated",
+        "passed": has_opportunity,
+        "severity": "high"
+    })
+    
+    # CP4.2: Demand-supply gap mentioned
+    gap_keywords = ['demand', 'supply', 'gap', 'unmet need', 'shortage']
+    gap_count = sum(1 for kw in gap_keywords if kw in content.lower())
+    has_gap_analysis = gap_count >= 2
+    checks.append({
+        "id": "CP4.2",
+        "description": "Demand-supply gap analysis included",
+        "passed": has_gap_analysis,
+        "severity": "medium"
+    })
+    
+    # CP4.3: Cluster member benefits
+    benefit_keywords = ['benefit', 'advantage', 'value', 'enable', 'access']
+    has_benefits = any(kw in content.lower() for kw in benefit_keywords)
+    checks.append({
+        "id": "CP4.3",
+        "description": "Cluster member benefits explained",
+        "passed": has_benefits,
+        "severity": "medium"
+    })
+    
+    # CP4.4: Market access strategy
+    strategy_keywords = ['strategy', 'approach', 'plan', 'marketing', 'entry']
+    has_strategy = any(kw in content.lower() for kw in strategy_keywords)
+    checks.append({
+        "id": "CP4.4",
+        "description": "Market access strategy mentioned",
+        "passed": has_strategy,
+        "severity": "high"
+    })
+    
+    # CP4.5: Competitive advantage identified
+    advantage_keywords = ['competitive advantage', 'differentiat', 'unique', 'edge', 'strength']
+    has_advantage = any(kw in content.lower() for kw in advantage_keywords)
+    checks.append({
+        "id": "CP4.5",
+        "description": "Competitive advantage identified",
+        "passed": has_advantage,
+        "severity": "medium"
+    })
+    
+    # CP4.6: Growth potential quantified
+    has_growth_numbers = bool(re.search(r'\d+\s*%|CAGR|growth\s+rate', content, re.IGNORECASE))
+    checks.append({
+        "id": "CP4.6",
+        "description": "Growth potential quantified with numbers",
+        "passed": has_growth_numbers,
+        "severity": "medium"
+    })
+    
+    # CP4.7: Market validation/evidence
+    evidence_keywords = ['source:', 'report', 'data', 'survey', 'study', 'research']
+    has_evidence = any(kw in content.lower() for kw in evidence_keywords)
+    checks.append({
+        "id": "CP4.7",
+        "description": "Market validation/evidence provided",
+        "passed": has_evidence,
+        "severity": "low"
+    })
+    
+    # CP4.8: Relevant to MSE-CDP objectives
+    msme_keywords = ['cluster', 'member units', 'common facility', 'mse', 'msme', 'small enterprise']
+    msme_count = sum(1 for kw in msme_keywords if kw in content.lower())
+    relevant_to_msecdp = msme_count >= 2
+    checks.append({
+        "id": "CP4.8",
+        "description": "Relevant to MSE-CDP cluster objectives",
+        "passed": relevant_to_msecdp,
+        "severity": "medium"
+    })
+    
+    passed_count = sum(1 for c in checks if c["passed"])
+    return {
+        "tier": "Compliance",
+        "checks": checks,
+        "passed": passed_count,
+        "total": len(checks),
+        "percentage": (passed_count / len(checks)) * 100
+    }
+
+
+def validate_market_analysis_quality(content: str, project_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Tier 4: Quality validation for Market Analysis (6 checks)
+    """
+    checks = []
+    
+    # Q4.1: Market terminology consistency
+    market_terms = re.findall(r'\b(?:market|segment|competition|demand|growth|trend|CAGR|share)\b', content, re.IGNORECASE)
+    consistent_terms = len(market_terms) >= 10
+    checks.append({
+        "id": "Q4.1",
+        "description": f"Market terminology used consistently (found {len(market_terms)} terms)",
+        "passed": consistent_terms,
+        "severity": "medium"
+    })
+    
+    # Q4.2: Quantitative data adequate (10+ numbers)
+    numbers = re.findall(r'\d+(?:,\d+)*(?:\.\d+)?', content)
+    has_quantitative = len(numbers) >= 10
+    checks.append({
+        "id": "Q4.2",
+        "description": f"Adequate quantitative data (found {len(numbers)} numbers)",
+        "passed": has_quantitative,
+        "severity": "high"
+    })
+    
+    # Q4.3: Data sources mentioned
+    sources = re.findall(r'(?:source|according to|based on|report|study).*?(?:\.|:)', content, re.IGNORECASE)
+    has_sources = len(sources) >= 1
+    checks.append({
+        "id": "Q4.3",
+        "description": f"Data sources mentioned (found {len(sources)})",
+        "passed": has_sources,
+        "severity": "medium"
+    })
+    
+    # Q4.4: Readability (15-30 words per sentence)
+    sentences = re.split(r'[.!?]+', content)
+    sentence_lengths = [len(s.split()) for s in sentences if len(s.strip()) > 10]
+    if sentence_lengths:
+        avg_length = sum(sentence_lengths) / len(sentence_lengths)
+        readable = 15 <= avg_length <= 30
+    else:
+        readable = False
+    checks.append({
+        "id": "Q4.4",
+        "description": f"Readable sentence length (avg: {avg_length:.1f} words/sentence)",
+        "passed": readable,
+        "severity": "low"
+    })
+    
+    # Q4.5: Professional tone
+    professional_indicators = ['analysis', 'assessment', 'evaluation', 'strategy', 'projection', 'forecast']
+    prof_count = sum(1 for term in professional_indicators if term in content.lower())
+    professional_tone = prof_count >= 3
+    checks.append({
+        "id": "Q4.5",
+        "description": "Professional analytical tone maintained",
+        "passed": professional_tone,
+        "severity": "medium"
+    })
+    
+    # Q4.6: Logical section flow
+    section_order_patterns = [
+        r'MARKET.*SIZE.*TARGET.*COMPETITION.*DEMAND',
+        r'INDUSTRY.*SEGMENT.*COMPETITOR.*PROJECTION',
+        r'OVERVIEW.*MARKET.*ANALYSIS.*STRATEGY'
+    ]
+    logical_flow = any(re.search(pattern, content, re.IGNORECASE | re.DOTALL) for pattern in section_order_patterns)
+    checks.append({
+        "id": "Q4.6",
+        "description": "Logical section flow (Market → Segments → Competition → Projections)",
+        "passed": logical_flow,
+        "severity": "low"
+    })
+    
+    passed_count = sum(1 for c in checks if c["passed"])
+    return {
+        "tier": "Quality",
+        "checks": checks,
+        "passed": passed_count,
+        "total": len(checks),
+        "percentage": (passed_count / len(checks)) * 100
+    }
+
+
+def validate_market_analysis(content: str, project_data: Dict[str, Any], 
+                             financial_data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """
+    Master validation function for Market Analysis section
+    Runs all 4 tiers: Structure, Content, Compliance, Quality
+    Total: 30 checks
+    """
+    print("\n" + "="*80)
+    print("VALIDATING: MARKET ANALYSIS (Phase 5)")
+    print("="*80)
+    
+    # Run all tier validations
+    tier1 = validate_market_analysis_structure(content, project_data)
+    tier2 = validate_market_analysis_content(content, project_data)
+    tier3 = validate_market_analysis_compliance(content, project_data)
+    tier4 = validate_market_analysis_quality(content, project_data)
+    
+    # Aggregate results
+    all_tiers = [tier1, tier2, tier3, tier4]
+    total_checks = sum(t["total"] for t in all_tiers)
+    total_passed = sum(t["passed"] for t in all_tiers)
+    overall_percentage = (total_passed / total_checks) * 100
+    
+    # Determine grade
+    grade = get_grade(overall_percentage)
+    
+    result = {
+        "section": "Market Analysis",
+        "tiers": all_tiers,
+        "summary": {
+            "total_checks": total_checks,
+            "passed": total_passed,
+            "failed": total_checks - total_passed,
+            "percentage": overall_percentage,
+            "grade": grade
+        }
+    }
+    
+    # Print summary
+    print(f"\nTier 1 - Structure:   {tier1['passed']}/{tier1['total']} ({tier1['percentage']:.1f}%)")
+    print(f"Tier 2 - Content:     {tier2['passed']}/{tier2['total']} ({tier2['percentage']:.1f}%)")
+    print(f"Tier 3 - Compliance:  {tier3['passed']}/{tier3['total']} ({tier3['percentage']:.1f}%)")
+    print(f"Tier 4 - Quality:     {tier4['passed']}/{tier4['total']} ({tier4['percentage']:.1f}%)")
+    print(f"\nOVERALL: {total_passed}/{total_checks} ({overall_percentage:.1f}%) - Grade {grade}")
+    print("="*80)
+    
+    return result
+
+
 def validate_financial_plan_compliance(content: str, project_data: Dict[str, Any], financial_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     ✅ TIER 3: COMPLIANCE VALIDATION - Financial Plan
