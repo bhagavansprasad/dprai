@@ -1002,14 +1002,44 @@ PROJECT DATA:
 - Serving: {members} member units
 
 Generate technical analysis covering:
-1. TECHNOLOGY OVERVIEW - Modern technologies suitable for {facility_type}
-2. EQUIPMENT & MACHINERY - Specific equipment required, specifications
-3. PRODUCTION PROCESS - Step-by-step workflow and operations
-4. CAPACITY ANALYSIS - Production capacity, utilization projections
-5. TECHNICAL SPECIFICATIONS - Quality standards, technical parameters
-6. TECHNOLOGY TRANSFER & TRAINING - Training needs and skill development
+**1. TECHNOLOGY OVERVIEW:** (250-300 words minimum)
+Provide a comprehensive analysis of the technology landscape for {facility_type}:
+- Current technology trends in the {cluster_type} sector
+- Specific technologies being proposed (inkjet, laser, digital, offset, etc.)
+- Technical specifications and capabilities of each technology
+- Comparison of different technology options (advantages/disadvantages)
+- Why the selected technology is appropriate for this cluster
+- Industry standards and best practices
+- Future-readiness and scalability of the technology
+- Integration with existing workflows in member units
 
-Write 6-7 paragraphs with specific technical details."""
+Example structure:
+"Modern digital printing technologies suitable for this facility include... [detailed explanation of 2-3 technologies]. The selection of [chosen technology] is based on several factors including... [explain benefits]. This technology enables... [capabilities]. Industry standards such as... [mention standards]. The proposed equipment meets/exceeds... [technical requirements]."
+
+2. EQUIPMENT & MACHINERY (200+ words)
+   - List 3-5 specific equipment with brand/model names (e.g., HP Latex 360, Xerox Iridesse)
+   - Include specifications: dimensions, capacity, power requirements
+   - Installation requirements and space needs
+
+3. PRODUCTION PROCESS (150+ words)
+   - Detailed step-by-step workflow
+   - Quality control checkpoints
+   - Safety procedures
+
+4. CAPACITY ANALYSIS (150+ words)
+   - Quantitative data: impressions/day, sq.m/hour, units/month
+   - Utilization projections with numbers
+   - Shift operations and capacity scaling
+
+5. TECHNICAL SPECIFICATIONS (150+ words)
+   - Quality standards (ISO, dpi, resolution)
+   - Technical parameters with numbers
+   - Industry certifications required
+
+6. TECHNOLOGY TRANSFER & TRAINING (150+ words)
+   - Specific training programs
+   - Duration and manpower requirements
+   - Skill development milestones"""
 
     sys_msg = SystemMessage(content=system_prompt)
     user_msg = HumanMessage(content=user_prompt)
